@@ -1,0 +1,21 @@
+/*pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+    plugins {
+        id 'com.android.application' version '7.1.0-alpha08'
+        id 'com.android.libcore' version '7.1.0-alpha08'
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}*/
+rootProject.name = "LibCore"
+include ':app'
+include ':library'

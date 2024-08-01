@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimaryLight">#FF4733</color>
+    <color name="colorPrimary">#EB2D17</color>
+    <color name="colorPrimaryDark">#9E1708</color>
+    <color name="colorSecondaryLight">#17EB7C</color>
+    <color name="colorSecondary">#009E4B</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="colorText">@color/white</color>
+    <color name="app_background">#000000</color>
+    <color name="black_on_light_theme">@color/white</color>
+</resources>

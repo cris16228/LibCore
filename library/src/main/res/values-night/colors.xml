@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="colorText">@color/white</color>
+    <color name="colorTextAlt">@color/black</color>
+    <color name="passcode_button">#1E1E1E</color>
+
+    <color name="app_background">#121212</color>
+    <color name="reverse_app_background">#F3F3F3</color>
+
+    <color name="black_on_light_theme">@color/white</color>
+    <color name="light_on_black_theme">@color/black</color>
+</resources>

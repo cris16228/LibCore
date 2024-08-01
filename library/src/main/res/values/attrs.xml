@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="Passcode">
+        <attr name="pass" format="string" />
+        <attr name="passcodeBackground" format="color" />
+        <attr name="passcodeOverlay" format="color" />
+        <attr name="passcodeError" format="color" />
+        <attr name="passcodeButtonColor" format="color" />
+        <attr name="firstInputTip" format="string" />
+        <attr name="secondInputTip" format="string" />
+        <attr name="wrongLengthTip" format="string" />
+        <attr name="wrongInputTip" format="string" />
+        <attr name="correctInputTip" format="string" />
+    </declare-styleable>
+
+
+    <declare-styleable name="RoundCornerImageView">
+        <attr name="cornerRadius" format="dimension" />
+        <attr name="roundedCorners">
+            <flag name="topLeft" value="1" />
+            <flag name="topRight" value="2" />
+            <flag name="bottomRight" value="4" />
+            <flag name="bottomLeft" value="5" />
+            <flag name="all" value="15" />
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="StrokeTextView">
+        <attr name="outerShadowRadius" format="dimension" />
+        <attr name="strokeWidth" format="dimension" />
+        <attr name="strokeMiter" format="dimension" />
+        <attr name="strokeColor" format="color" />
+        <attr name="strokeJoinStyle">
+            <enum name="miter" value="0" />
+            <enum name="bevel" value="1" />
+            <enum name="round" value="2" />
+
+        </attr>
+    </declare-styleable>
+</resources>

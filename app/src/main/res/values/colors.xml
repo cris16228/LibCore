@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimaryLight">#FF4733</color>
+    <color name="colorPrimary">#EB2D17</color>
+    <color name="colorPrimaryDark">#9E1708</color>
+    <color name="colorSecondaryLight">#17EB7C</color>
+    <color name="colorSecondary">#009E4B</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="colorText">@color/black</color>
+    <color name="colorTextError">#FF0000</color>
+    <color name="colorPDFBar">#D1000000</color>
+    <color name="colorPageCount">#D1959595</color>
+    <color name="app_background">#FFFFFF</color>
+    <color name="bottom_sheet_dialog_background">#448AFF</color>
+    <color name="black_on_light_theme">@color/black</color>
+</resources>

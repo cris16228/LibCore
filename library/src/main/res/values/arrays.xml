@@ -1,0 +1,25 @@
+<resources>
+    <!-- Theme Preference -->
+    <string-array name="themes">
+        <item>@string/light</item>
+        <item>@string/dark</item>
+        <item>@string/follow_system</item>
+    </string-array>
+
+    <string-array name="theme_values">
+        <item>light</item>
+        <item>dark</item>
+        <item>follow_system</item>
+    </string-array>
+
+    <!--Locale Preference-->
+    <string-array name="locales">
+        <item>@string/english</item>
+        <item>@string/italian</item>
+    </string-array>
+
+    <string-array name="locale_values">
+        <item>en</item>
+        <item>it</item>
+    </string-array>
+</resources>

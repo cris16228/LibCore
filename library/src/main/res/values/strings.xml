@@ -1,0 +1,154 @@
+<resources>
+    <!--Default settings-->
+    <string name="dev_header">Development</string>
+    <string name="double_tap_summary">Tap back button twice to close the app</string>
+    <string name="double_tap_title">Double tap to exit</string>
+    <string name="bug_report_title">Report a bug</string>
+    <string name="bug_report_summary">Have you encountered a bug? Report it!</string>
+    <string name="suggestion_title">Suggest an idea</string>
+    <string name="suggestion_summary">Do you have an idea for something cool? Suggest it!</string>
+
+    <!--Battery source-->
+    <string name="battery_power_source_unplugged">Unplugged</string>
+    <string name="battery_power_source_ac" translatable="false">AC</string>
+    <string name="battery_power_source_usb" translatable="false">USB</string>
+    <string name="battery_power_source_wireless" translatable="false">Wireless</string>
+
+    <!--Battery condition-->
+    <string name="battery_condition_cold">Cold</string>
+    <string name="battery_condition_dead">Dead</string>
+    <string name="battery_condition_good">Good</string>
+    <string name="battery_condition_unknown">Unknown</string>
+    <string name="battery_condition_overheat">Overheat</string>
+    <string name="battery_condition_high_voltage">High Voltage</string>
+    <string name="battery_condition_unspecified_failure">Unspecified Failure</string>
+
+    <!--Battery status-->
+    <string name="battery_status_charging">Charging</string>
+    <string name="battery_status_discharging">Discharging</string>
+    <string name="battery_status_full">Full</string>
+    <string name="battery_status_unknown">Unknown</string>
+    <string name="battery_status_not_charging">Not Charging</string>
+
+    <!-- Settings Titles -->
+    <string name="app_aspect_header">App aspect settings</string>
+    <string name="security_header">App security</string>
+
+    <!-- Settings Preferences -->
+    <string name="theme_title">Theme</string>
+    <string name="theme_summary">Change the app aspect</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    <string name="follow_system">Follow system</string>
+
+    <string name="locale_title">Language</string>
+    <string name="locale_summary">Choose the default language</string>
+    <string name="english">English</string>
+    <string name="italian">Italian</string>
+
+    <string name="use_pin_title">Enable access pin</string>
+    <string name="use_pin_summary">Protects the app with a pin</string>
+    <string name="use_fingerprint_title">Enable access fingerprint</string>
+    <string name="use_fingerprint_summary">Protects the app with a fingerprint</string>
+
+    <!-- Passcode -->
+    <string name="passcode_tip">Enter a passcode of 4 digits</string>
+    <string name="passcode_enter_again">Re-enter new passcode</string>
+    <string name="passcode_not_matching">Passcode do not match</string>
+    <string name="passcode_correct">Passcode is correct</string>
+
+    <!-- Error messages-->
+    <string name="generic_error_messages_funny">I don\'t know what the fuck just happened but your %s could not be loaded</string>
+    <string name="generic_error_messages_idk_emoji" translatable="false">¯\\_(ツ)_/¯</string>
+    <string name="generic_error_messages_omg_emoji" translatable="false">ಠ_ಠ</string>
+    <string name="generic_error_messages_do_it_emoji" translatable="false">(ง •̀_•́)ง</string>
+    <string name="generic_error_messages_happy_emoji" translatable="false">•ᴗ•</string>
+    <string name="generic_error_messages_table_flip_emoji" translatable="false">(╯°□°）╯︵ ┻━┻</string>
+    <string name="generic_error_messages_table_unflip_emoji" translatable="false">┬──┬ ノ(ò_óノ)</string>
+    <string name="generic_error_messages_help_emoji" translatable="false">\\(°Ω°)/</string>
+    <string name="generic_error_messages_wtf_emoji" translatable="false">(⊙＿⊙\')</string>
+    <string name="generic_error_messages_at_what_cost_emoji" translatable="false">ლ(ಠ益ಠლ)</string>
+    <string name="generic_error_messages_wtf_breakdown" translatable="false">ಥ﹏ಥ</string>
+    <string name="generic_error_messages_crying_emoji" translatable="false">ಥ_ಥ</string>
+
+    <!-- Auth UI -->
+    <string name="title_fragment_register">Register</string>
+    <string name="title_fragment_login">Login</string>
+    <string name="email_hint" translatable="false">Email</string>
+    <string name="password_hint" translatable="false">Password</string>
+    <string name="confirm_password_hint" translatable="false">Confirm password</string>
+    <string name="username_hint" translatable="false">Username</string>
+    <string name="register">Register</string>
+    <string name="already_account">Do you already have an account?</string>
+    <string name="login">Login</string>
+    <string name="fill_every_detail">Please fill every detail</string>
+    <string name="password_short">The password needs to be at least 8 characters long</string>
+    <string name="account_created_successfully">Account created successfully</string>
+    <string name="account_creation_error">Couldn\'t create an account</string>
+    <string name="no_account">Do you want to create an account?</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="login_successfully">Login success!</string>
+    <string name="login_error">Unable to login. Check email and password</string>
+    <string name="email_sent">Email sent!</string>
+    <string name="title_activity_reset_password">Reset password</string>
+    <string name="reset_password">Reset password</string>
+    <string name="missing_email">Please add a mail</string>
+    <string name="keep_user_logged_in">Keep me logged in</string>
+    <string name="email_not_exists">"The account associated to the mail %s doesn't exists "</string>
+    <string name="sign_out">Log out</string>
+    <string name="user_name_text">Username: </string>
+    <string name="user_name" translatable="false">%s</string>
+    <string name="user_mail_text" translatable="false">Email: </string>
+    <string name="user_email" translatable="false">%s</string>
+    <string name="profile_upload_picture">Upload</string>
+    <string name="update_password">Update password</string>
+    <string name="user_registration_date_text">Registration date:</string>
+    <string name="user_registration_date" translatable="false">%s</string>
+    <string name="authError" translatable="false">%s</string>
+
+
+    <string name="cancel">Cancel</string>
+    <string name="no_internet_header" translatable="false">No internet</string>
+    <string name="no_internet_subtext">Please check your connection status and try again</string>
+    <string name="close">Close</string>
+    <string name="settings">Settings</string>
+    <string name="enable_mobile_data">Mobile</string>
+    <string name="enable_wifi" translatable="false">Wifi</string>
+    <string name="new_update_title_app">New version %s found!</string>
+    <string name="new_update_title_patch">New patch found! %d</string>
+    <string name="new_update_message">Do you want to download and install the new %s?</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="updater_title">%s update</string>
+    <string name="patch" translatable="false">patch</string>
+    <string name="app_update">app update</string>
+    <string name="json_link_invalid">Invalid json link!</string>
+    <string name="download_link_invalid">Invalid download link!</string>
+    <string name="number_1" translatable="false">1</string>
+    <string name="number_2" translatable="false">2</string>
+    <string name="number_3" translatable="false">3</string>
+    <string name="number_4" translatable="false">4</string>
+    <string name="number_5" translatable="false">5</string>
+    <string name="number_6" translatable="false">6</string>
+    <string name="number_7" translatable="false">7</string>
+    <string name="number_8" translatable="false">8</string>
+    <string name="number_9" translatable="false">9</string>
+    <string name="number_0" translatable="false">0</string>
+    <string name="clear">Clear</string>
+    <string name="downloading_app_name">Downloading %s…</string>
+    <string name="downloading_app_size" translatable="false">%s/%s</string>
+    <string name="downloading_app_percent" translatable="false">%s%%</string>
+    <string name="image_still_loading">Image is still loading…</string>
+    <string name="fingerprint_title">Authenticate with your finger</string>
+    <string name="fingerprint_use_pin" translatable="false">PIN</string>
+    <string name="setup_text_needed">Few things needed before you can proceed</string>
+    <string name="setup_currency_hint">Currency</string>
+    <string name="setup_date_format_hint">Date format</string>
+    <string name="setup_currency">Select your currency</string>
+    <string name="setup_date_format">Select your date format</string>
+    <string name="finish">Finish</string>
+    <string name="press_back_twice">Press back again to close the app</string>
+    <string name="image_download_progress">%s%%</string>
+    <string name="hints_bug_suggestion_title">Give the %s a title…</string>
+    <string name="hints_bug_suggestion_body">Describe the %s shortly…</string>
+    <string name="about_version" translatable="false">%s (%s)</string>
+</resources>

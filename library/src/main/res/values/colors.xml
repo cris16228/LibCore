@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Main Theme https://m2.material.io/resources/color/#!/?view.left=0&view.right=1&primary.color=1976D2&secondary.color=4CAF50 -->
+    <color name="colorPrimaryMain">#2196f3</color>
+    <color name="colorPrimaryLightMain">#6ec6ff</color>
+    <color name="colorPrimaryDarkMain">#0069c0</color>
+    <color name="colorSecondaryMain">#4caf50</color>
+    <color name="colorSecondaryLightMain">#80e27e</color>
+    <color name="colorSecondaryDarkMain">#087f23</color>
+
+    <!-- Theme 1-->
+    <color name="colorPrimary_1">#448AFF</color>
+    <color name="colorPrimaryLight_1">#33A5E8</color>
+    <color name="colorPrimaryDark_1">#3346E8</color>
+    <color name="colorSecondary_1">#FFA715</color>
+    <color name="colorSecondaryLight_1">#FFC345</color>
+    <color name="colorSecondaryDark_1">#B57B02</color>
+
+    <!-- Theme 2-->
+    <color name="colorPrimary_2">#D50000</color>
+    <color name="colorPrimaryLight_2">#FF5131</color>
+    <color name="colorPrimaryDark_2">#9B0000</color>
+    <color name="colorSecondary_2">#304FFE</color>
+    <color name="colorSecondaryLight_2">#7A7CFF</color>
+    <color name="colorSecondaryDark_2">#0026CA</color>
+
+    <!-- Theme 3-->
+    <color name="colorPrimary_3">#0091EA</color>
+    <color name="colorPrimaryLight_3">#64C1FF</color>
+    <color name="colorPrimaryDark_3">#0064B7</color>
+    <color name="colorSecondary_3">#00C853</color>
+    <color name="colorSecondaryLight_3">#5EFC82</color>
+    <color name="colorSecondaryDark_3">#009624</color>
+
+    <!-- Theme 4-->
+    <color name="colorPrimary_4">#F9A825</color>
+    <color name="colorPrimaryLight_4">#FFD95A</color>
+    <color name="colorPrimaryDark_4">#C17900</color>
+    <color name="colorSecondary_4">#64DD17</color>
+    <color name="colorSecondaryLight_4">#9CFF57</color>
+    <color name="colorSecondaryDark_4">#1FAA00</color>
+
+    <!-- Theme 5-->
+    <color name="colorPrimary_5">#00B8D4</color>
+    <color name="colorPrimaryLight_5">#62EBFF</color>
+    <color name="colorPrimaryDark_5">#0088A3</color>
+    <color name="colorSecondary_5">#9C27B0</color>
+    <color name="colorSecondaryLight_5">#D05CE3</color>
+    <color name="colorSecondaryDark_5">#6A0080</color>
+
+    <!-- Theme 6-->
+    <color name="colorPrimary_6">#304FFE</color>
+    <color name="colorPrimaryLight_6">#7A7CFF</color>
+    <color name="colorPrimaryDark_6">#0026CA</color>
+    <color name="colorSecondary_6">#D50000</color>
+    <color name="colorSecondaryLight_6">#FF5131</color>
+    <color name="colorSecondaryDark_6">#9B0000</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="colorText">@color/black</color>
+    <color name="colorTextAlt">@color/white</color>
+    <color name="colorTextError">#FF0000</color>
+    <color name="app_background">#F3F3F3</color>
+    <color name="reverse_app_background">#121212</color>
+    <color name="bottom_sheet_dialog_background">#448AFF</color>
+    <color name="black_on_light_theme">@color/black</color>
+    <color name="light_on_black_theme">@color/white</color>
+    <color name="passcode_background">#AAAAAA</color>
+    <color name="passcode_button">#D1D1D1</color>
+    <color name="passcode_overlay">@color/colorPrimary_1</color>
+    <color name="passcode_wrong">#F24055</color>
+    <color name="textViewNameBackground">#38000000</color>
+    <color name="transparent">#00000000</color>
+</resources>
