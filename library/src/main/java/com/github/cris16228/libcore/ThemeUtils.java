@@ -64,9 +64,9 @@ public class ThemeUtils {
             case LIGHT:
                 return Theme.LIGHT;
             case AUTO:
+            default:
                 return Theme.AUTO;
         }
-        return Theme.LIGHT;
     }
 
     public void applyTheme() {

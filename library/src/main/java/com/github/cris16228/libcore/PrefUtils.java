@@ -10,6 +10,8 @@ public class PrefUtils {
     public static PrefUtils with(Context _context) {
         PrefUtils prefUtils = new PrefUtils();
         prefUtils.context = _context;
+        if (StringUtils.isEmpty(PREF))
+            PREF = _context.getPackageName() + "_preferences";
         return prefUtils;
     }
 
@@ -17,6 +19,8 @@ public class PrefUtils {
         PrefUtils prefUtils = new PrefUtils();
         prefUtils.context = _context;
         PREF = pref;
+        if (StringUtils.isEmpty(PREF))
+            PREF = _context.getPackageName() + "_preferences";
         return prefUtils;
     }
 
