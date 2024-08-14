@@ -345,13 +345,13 @@ public class Passcode extends FrameLayout implements View.OnClickListener {
                         dot_3.setBackgroundResource(R.drawable.passcode_overlay);
                         dot_4.setBackgroundResource(R.drawable.passcode_overlay);
                         if (TextUtils.isEmpty(firstInput) && TextUtils.isEmpty(secondInput)) {
-                            firstInput = StringUtils.stringToBinary(String.valueOf(numbers_list.stream().collect(Collectors.joining()).toCharArray()), true);
+                            firstInput = String.valueOf(numbers_list.stream().collect(Collectors.joining()).toCharArray());
                             message.setText(secondInputTip);
                             delayClear(200);
                             break;
                         }
                         if (!TextUtils.isEmpty(firstInput) && TextUtils.isEmpty(secondInput)) {
-                            secondInput = StringUtils.stringToBinary(String.valueOf(numbers_list.stream().collect(Collectors.joining()).toCharArray()), true);
+                            secondInput = String.valueOf(numbers_list.stream().collect(Collectors.joining()).toCharArray());
                             if (secondInput.equals(firstInput)) {
                                 delayClear(100);
                                 onPasswordListener.onPasswordCreated(secondInput);
@@ -431,6 +431,4 @@ public class Passcode extends FrameLayout implements View.OnClickListener {
 
         void onPasswordCreated(String password);
     }
-
-
 }
