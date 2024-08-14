@@ -6,7 +6,7 @@
     <string name="bug_report_title">Report a bug</string>
     <string name="bug_report_summary">Have you encountered a bug? Report it!</string>
     <string name="suggestion_title">Suggest an idea</string>
-    <string name="suggestion_summary">Do you have an idea for something cool? Suggest it!</string>
+    <string name="suggestion_summary">Do you have an idea for something cool or improvement? Suggest it!</string>
 
     <!--Battery source-->
     <string name="battery_power_source_unplugged">Unplugged</string>
@@ -31,8 +31,8 @@
     <string name="battery_status_not_charging">Not Charging</string>
 
     <!-- Settings Titles -->
-    <string name="app_aspect_header">App aspect settings</string>
-    <string name="security_header">App security</string>
+    <string name="appearance_header">Appearance</string>
+    <string name="security_header">Security</string>
 
     <!-- Settings Preferences -->
     <string name="theme_title">Theme</string>

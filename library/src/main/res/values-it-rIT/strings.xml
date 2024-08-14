@@ -13,7 +13,7 @@
     <string name="battery_status_full">Piena</string>
     <string name="battery_status_unknown">Sconosciuto</string>
     <string name="battery_status_not_charging">Non in carica</string>
-    <string name="app_aspect_header">Impostazioni aspetto app</string>
+    <string name="appearance_header">Aspetto</string>
     <string name="theme_title">Tema</string>
     <string name="theme_summary">Cambia l\'aspetto dell\'app</string>
     <string name="light">Chiaro</string>
@@ -50,4 +50,11 @@
     <string name="fingerprint_title">Autenticati con l\'impronta</string>
     <string name="hints_bug_suggestion_title">Dai un titolo…</string>
     <string name="hints_bug_suggestion_body">Descrivi brevemente…</string>
+    <string name="dev_header">Sviluppo</string>
+    <string name="double_tap_summary">Premi il pulsante indietro due volte per chiudere l\'app</string>
+    <string name="double_tap_title">Premi due volte per chiudere</string>
+    <string name="bug_report_title">Segnala un bug</string>
+    <string name="bug_report_summary">Hai trovato un bug? Segnalalo!</string>
+    <string name="suggestion_title">Suggerisci un idea</string>
+    <string name="suggestion_summary">Hai un idea per qualcosa di bello o un miglioramento? Suggerisci!</string>
 </resources>
