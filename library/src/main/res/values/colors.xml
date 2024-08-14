@@ -2,9 +2,9 @@
 <resources>
 
     <!-- Main Theme https://m2.material.io/resources/color/#!/?view.left=0&view.right=1&primary.color=1976D2&secondary.color=4CAF50 -->
-    <color name="colorPrimaryMain">#2196f3</color>
-    <color name="colorPrimaryLightMain">#6ec6ff</color>
-    <color name="colorPrimaryDarkMain">#0069c0</color>
+    <color name="colorPrimaryMain">#41a6f6</color>
+    <color name="colorPrimaryLightMain">#73eff7</color>
+    <color name="colorPrimaryDarkMain">#3b5dc9</color>
     <color name="colorSecondaryMain">#4caf50</color>
     <color name="colorSecondaryLightMain">#80e27e</color>
     <color name="colorSecondaryDarkMain">#087f23</color>

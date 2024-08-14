@@ -34,7 +34,7 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="Theme.MainThemeActionBar" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.MainThemeMaterialYou" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/colorPrimaryMain</item>
         <item name="colorPrimaryVariant">@color/colorPrimaryLightMain</item>
@@ -51,12 +51,6 @@
     </style>
 
     <style name="Theme.MainTheme.BlendStatusBar" parent="Theme.MainTheme">
-
-        <item name="android:statusBarColor">@color/app_background</item>
-        <item name="android:windowLightStatusBar">true</item>
-    </style>
-
-    <style name="Theme.MainTheme.BlendStatusBarActionBar" parent="Theme.MainThemeActionBar">
 
         <item name="android:statusBarColor">@color/app_background</item>
         <item name="android:windowLightStatusBar">true</item>
