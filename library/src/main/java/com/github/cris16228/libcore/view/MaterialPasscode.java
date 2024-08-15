@@ -18,7 +18,9 @@ import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
+import com.github.cris16228.libcore.PrefUtils;
 import com.github.cris16228.libcore.R;
+import com.github.cris16228.libcore.SimpleHashUtils;
 import com.github.cris16228.libcore.StringUtils;
 
 import java.util.ArrayList;
@@ -40,14 +42,15 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
     private int backgroundColor = 0xFFAAAAAA;
     private int overlayColor = 0xFF448AFF;
     private int errorColor = 0xFFF24055;
-    private String firstInputTip = "Enter a passcode of 4 digits";
-    private String secondInputTip = "Re-enter new passcode";
-    private String wrongInputTip = "Passcode do not match";
-    private String correctInputTip = "Passcode is correct";
+    private int firstInputTip = R.string.passcode_tip;
+    private int secondInputTip = R.string.passcode_enter_again;
+    private int wrongInputTip = R.string.passcode_not_matching;
+    private int correctInputTip = R.string.passcode_correct;
     private Drawable code_background;
     private Drawable code_overlay;
     private Drawable code_error;
     private TextView message;
+    private PrefUtils prefUtils;
 
     public MaterialPasscode(@NonNull Context context) {
         super(context);
@@ -63,17 +66,17 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
             backgroundColor = typedArray.getColor(R.styleable.Passcode_passcodeBackground, backgroundColor);
             overlayColor = typedArray.getColor(R.styleable.Passcode_passcodeOverlay, overlayColor);
             errorColor = typedArray.getColor(R.styleable.Passcode_passcodeError, errorColor);
-            firstInputTip = typedArray.getString(R.styleable.Passcode_firstInputTip);
+            /*firstInputTip = typedArray.getString(R.styleable.Passcode_firstInputTip);
             secondInputTip = typedArray.getString(R.styleable.Passcode_secondInputTip);
             wrongInputTip = typedArray.getString(R.styleable.Passcode_wrongInputTip);
-            correctInputTip = typedArray.getString(R.styleable.Passcode_correctInputTip);
+            correctInputTip = typedArray.getString(R.styleable.Passcode_correctInputTip);*/
         } finally {
             typedArray.recycle();
         }
-        firstInputTip = firstInputTip == null ? context.getResources().getString(R.string.passcode_tip) : firstInputTip;
+        /*firstInputTip = firstInputTip == null ? context.getResources().getString(R.string.passcode_tip) : firstInputTip;
         secondInputTip = secondInputTip == null ? context.getResources().getString(R.string.passcode_enter_again) : secondInputTip;
         wrongInputTip = wrongInputTip == null ? context.getResources().getString(R.string.passcode_not_matching) : wrongInputTip;
-        correctInputTip = correctInputTip == null ? context.getResources().getString(R.string.passcode_correct) : correctInputTip;
+        correctInputTip = correctInputTip == null ? context.getResources().getString(R.string.passcode_correct) : correctInputTip;*/
     }
 
     public MaterialPasscode(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -84,17 +87,17 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
             backgroundColor = typedArray.getColor(R.styleable.Passcode_passcodeBackground, backgroundColor);
             overlayColor = typedArray.getColor(R.styleable.Passcode_passcodeOverlay, overlayColor);
             errorColor = typedArray.getColor(R.styleable.Passcode_passcodeError, errorColor);
-            firstInputTip = typedArray.getString(R.styleable.Passcode_firstInputTip);
+            /*firstInputTip = typedArray.getString(R.styleable.Passcode_firstInputTip);
             secondInputTip = typedArray.getString(R.styleable.Passcode_secondInputTip);
             wrongInputTip = typedArray.getString(R.styleable.Passcode_wrongInputTip);
-            correctInputTip = typedArray.getString(R.styleable.Passcode_correctInputTip);
+            correctInputTip = typedArray.getString(R.styleable.Passcode_correctInputTip);*/
         } finally {
             typedArray.recycle();
         }
-        firstInputTip = firstInputTip == null ? context.getResources().getString(R.string.passcode_tip) : firstInputTip;
+        /*firstInputTip = firstInputTip == null ? context.getResources().getString(R.string.passcode_tip) : firstInputTip;
         secondInputTip = secondInputTip == null ? context.getResources().getString(R.string.passcode_enter_again) : secondInputTip;
         wrongInputTip = wrongInputTip == null ? context.getResources().getString(R.string.passcode_not_matching) : wrongInputTip;
-        correctInputTip = correctInputTip == null ? context.getResources().getString(R.string.passcode_correct) : correctInputTip;
+        correctInputTip = correctInputTip == null ? context.getResources().getString(R.string.passcode_correct) : correctInputTip;*/
         initView(context);
     }
 
@@ -135,7 +138,7 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
         this.errorColor = error;
     }
 
-    public String getFirstInputTip() {
+/*    public String getFirstInputTip() {
         return firstInputTip;
     }
 
@@ -165,7 +168,7 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
 
     public void setCorrectInputTip(String correctInputTip) {
         this.correctInputTip = correctInputTip;
-    }
+    }*/
 
     public Drawable getCode_background() {
         return code_background;
@@ -316,7 +319,7 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
     }
 
     private void passNumber(ArrayList<String> numbers_list) {
-        if (numbers_list.size() <= 0) {
+        if (numbers_list.isEmpty()) {
             dot_1.setBackgroundResource(R.drawable.passcode_background);
             dot_2.setBackgroundResource(R.drawable.passcode_background);
             dot_3.setBackgroundResource(R.drawable.passcode_background);
@@ -348,15 +351,17 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
                         dot_3.setBackgroundResource(R.drawable.passcode_overlay);
                         dot_4.setBackgroundResource(R.drawable.passcode_overlay);
                         if (TextUtils.isEmpty(firstInput) && TextUtils.isEmpty(secondInput)) {
-                            firstInput = StringUtils.stringToBinary(String.valueOf(numbers_list.stream().collect(Collectors.joining()).toCharArray()), true);
+                            firstInput = String.valueOf(numbers_list.stream().collect(Collectors.joining()).toCharArray());
                             message.setText(secondInputTip);
                             delayClear(100);
                             break;
                         }
                         if (!TextUtils.isEmpty(firstInput) && TextUtils.isEmpty(secondInput)) {
-                            secondInput = StringUtils.stringToBinary(String.valueOf(numbers_list.stream().collect(Collectors.joining()).toCharArray()), true);
+                            secondInput = String.valueOf(numbers_list.stream().collect(Collectors.joining()).toCharArray());
                             if (secondInput.equals(firstInput)) {
                                 delayClear(200);
+                                SimpleHashUtils simpleHashUtils = new SimpleHashUtils();
+                                secondInput = simpleHashUtils.sha256(secondInput);
                                 onPasswordListener.onPasswordCreated(secondInput);
                             } else {
                                 message.setText(wrongInputTip);
@@ -409,6 +414,7 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
                                 dot_3.setBackgroundResource(R.drawable.passcode_error);
                                 dot_4.setBackgroundResource(R.drawable.passcode_error);
                                 message.setText(wrongInputTip);
+                                onPasswordListener.onPasswordNotMatch();
                                 delayClear(600);
                             }
                         }
@@ -430,7 +436,7 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
 
         void onPasswordNotMatch();
 
-        void onPasswordCreated(String password);
+        void onPasswordCreated(String hashedPassword);
     }
 
 

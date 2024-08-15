@@ -68,7 +68,7 @@ public class SimpleHashUtils {
             int halfByte = (b >>> 4) & 0x0F;
             int twoHalf = 0;
             do {
-                buf.append((0 <= halfByte) && (halfByte <= 9) ? (char) ('0' + halfByte) : (char) ('a' + (halfByte - 10)));
+                buf.append(halfByte <= 9 ? (char) ('0' + halfByte) : (char) ('a' + halfByte - 10));
                 halfByte = b & 0x0F;
             } while (twoHalf++ < 1);
         }
