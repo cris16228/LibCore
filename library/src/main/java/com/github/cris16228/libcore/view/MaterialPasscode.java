@@ -21,7 +21,6 @@ import androidx.core.graphics.drawable.DrawableCompat;
 import com.github.cris16228.libcore.PrefUtils;
 import com.github.cris16228.libcore.R;
 import com.github.cris16228.libcore.SimpleHashUtils;
-import com.github.cris16228.libcore.StringUtils;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -400,8 +399,9 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
                         dot_3.setBackgroundResource(R.drawable.passcode_overlay);
                         dot_4.setBackgroundResource(R.drawable.passcode_overlay);
                         code = numbers_list.stream().collect(Collectors.joining()).toCharArray();
+                        code = new SimpleHashUtils().sha256(String.valueOf(code)).toCharArray();
                         if (!TextUtils.isEmpty(passcode)) {
-                            if (String.valueOf(code).equals(StringUtils.binaryToString(passcode, true))) {
+                            if (String.valueOf(code).equals(passcode)) {
                                 lock.setBackgroundResource(R.drawable.lock_open);
                                 message.setText(correctInputTip);
                                 new Handler().postDelayed(() -> {
