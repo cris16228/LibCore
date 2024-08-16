@@ -37,4 +37,12 @@
 
         </attr>
     </declare-styleable>
+
+    <declare-styleable name="PieChart">
+        <attr name="pieChartSize" format="dimension" />
+        <attr name="pieChartXOffset" format="dimension" />
+        <attr name="pieChartYOffset" format="dimension" />
+        <attr name="enablePercent" format="boolean" />
+        <attr name="enableLegend" format="boolean" />
+    </declare-styleable>
 </resources>

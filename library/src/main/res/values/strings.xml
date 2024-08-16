@@ -151,4 +151,6 @@
     <string name="hints_bug_suggestion_title">Give the %s a title…</string>
     <string name="hints_bug_suggestion_body">Describe the %s shortly…</string>
     <string name="about_version" translatable="false">%s (%s)</string>
+    <string name="legend_text_percent" translatable="false">%s - %s%%</string>
+    <string name="legend_text_no_percent" translatable="false">%s</string>
 </resources>
