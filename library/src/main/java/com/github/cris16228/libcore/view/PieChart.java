@@ -17,6 +17,7 @@ import com.github.cris16228.libcore.models.PieChartModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class PieChart extends View {
 
@@ -33,11 +34,67 @@ public class PieChart extends View {
     private int legendWidth;
     private boolean enablePercent;
     private boolean enableLegend;
-    private float lastTouchY;
+    private boolean useDefaultColors;
+    private List<Integer> colors;
+    private boolean legendOnRight;
+    private int legendX;
+    private int legendY;
 
+    private String[] colorString = {
+            "#5574a6ff",
+            "#3366ccff",
+            "#dc3912ff",
+            "#ff9900ff",
+            "#109618ff",
+            "#990099ff",
+            "#5574a6ff",
+            "#0099c6ff",
+            "#dd4477ff",
+            "#66aa00ff",
+            "#b82e2eff",
+            "#316395ff",
+            "#994499ff",
+            "#22aa99ff",
+            "#aaaa11ff",
+            "#6633ccff",
+            "#e67300ff",
+            "#8b0707ff",
+            "#651067ff",
+            "#329262ff",
+            "#63a8c0ff",
+            "#3b3eacff",
+            "#b77322ff",
+            "#16d620ff",
+            "#b91383ff",
+            "#f4359eff",
+            "#9c5935ff",
+            "#a9c413ff",
+            "#2a778dff",
+            "#668d1cff",
+            "#bea413ff",
+            "#0c5922ff",
+            "#3366ccff",
+            "#dc3912ff",
+            "#ff9900ff",
+            "#109618ff",
+            "#990099ff",
+            "#dd4477ff",
+            "#66aa00ff",
+            "#b82e2eff",
+            "#316395ff",
+            "#994499ff",
+            "#22aa99ff",
+            "#6633ccff",
+            "#e67300ff",
+            "#8b0707ff",
+            "#651067ff",
+            "#329262ff"
+    };
 
     public PieChart(Context context, AttributeSet attrs) {
         super(context, attrs);
+        colors = new ArrayList<>();
+        buildColors();
         scroller = new Scroller(context);
         TypedArray attributes = context.obtainStyledAttributes(attrs, R.styleable.PieChart);
         pieChartSize = attributes.getDimensionPixelSize(R.styleable.PieChart_pieChartSize, 200);
@@ -46,7 +103,19 @@ public class PieChart extends View {
         pieChartYOffset = attributes.getDimensionPixelSize(R.styleable.PieChart_pieChartYOffset, 0);
         enablePercent = attributes.getBoolean(R.styleable.PieChart_enablePercent, true);
         enableLegend = attributes.getBoolean(R.styleable.PieChart_enableLegend, true);
+        useDefaultColors = attributes.getBoolean(R.styleable.PieChart_useDefaultColors, true);
+        legendOnRight = attributes.getBoolean(R.styleable.PieChart_legendOnRight, true);
         attributes.recycle();
+    }
+
+    private void buildColors() {
+        for (int i = 0; i < pieChartModels.size(); i++) {
+            try {
+                colors.add(Color.parseColor(colorString[i]));
+            } catch (IndexOutOfBoundsException e) {
+                colors.add(Color.parseColor(colorString[new Random().nextInt(colorString.length)]));
+            }
+        }
     }
 
     public void setData(List<PieChartModel> pieChartModels) {
@@ -68,29 +137,16 @@ public class PieChart extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
 
-        int desiredWidth = widthSize;
 
-        int legendHeight = dataSize * 60 + 50;
-        int desiredHeight = heightSize - legendHeight; // Available height for the pie chart
-
-        int width = desiredWidth;
-        int height = desiredHeight + legendHeight;
+        int width = 0;
+        int height = 0;
 
         if (widthMode == MeasureSpec.EXACTLY) {
             width = widthSize;
         } else if (widthMode == MeasureSpec.AT_MOST) {
-            width = Math.min(desiredWidth, widthSize);
+            width = Math.min(pieChartSize, widthSize);
         }
-
-        if (heightMode == MeasureSpec.EXACTLY) {
-            height = heightSize;
-        } else if (heightMode == MeasureSpec.AT_MOST) {
-            height = Math.min(desiredHeight, heightSize);
-        }
-
         setMeasuredDimension(width, height);
     }
 
@@ -104,7 +160,6 @@ public class PieChart extends View {
 
         for (PieChartModel model : pieChartModels) {
             titles.add(model.getTitle());
-            /*colors.add(model.getColor());*/
             totalAmount += model.getValue();
         }
 
@@ -116,6 +171,12 @@ public class PieChart extends View {
         int availableWidth = getWidth();
         pieChartSize = Math.min(pieChartSize, 475);
         legendWidth = availableWidth - pieChartSize;
+        if (!legendOnRight) {
+            pieChartXOffset = pieChartXOffset + legendWidth;
+            legendX = 0;
+        } else {
+            legendX = getWidth() - legendWidth + 50;
+        }
         RectF rect = new RectF(
                 pieChartXOffset,
                 pieChartYOffset,
@@ -132,12 +193,12 @@ public class PieChart extends View {
         }
         canvas.save();
         canvas.translate(0, legendScrollY);
-        // Draw legend
         float legendY = rect.top + 50;
         paint.setTextSize(40);
-        for (PieChartModel model : pieChartModels) {
-            paint.setColor(Color.parseColor(String.format("#%06X", (0xFFFFFF & model.getColor()))));
-            canvas.drawRect(getWidth() - legendWidth + 50, legendY, getWidth() - legendWidth + 100, legendY + 40, paint);
+        for (int i = 0; i < pieChartModels.size(); i++) {
+            PieChartModel model = pieChartModels.get(i);
+            paint.setColor(Color.parseColor(String.format("#%06X", (0xFFFFFF & (model.getColor() == 0 ? colors.get(i) : model.getColor())))));
+            canvas.drawRect(legendX, legendY, getWidth() - legendWidth + 100, legendY + 40, paint);
             paint.setColor(Color.WHITE);
             String percent = FloatUtils.getNumberFormat(((float) (model.getValue() / totalAmount) * 100), 2);
             if (enableLegend) {
@@ -148,6 +209,7 @@ public class PieChart extends View {
                 }
             }
             legendY += 60;
+
         }
         canvas.restore();
         if (!scroller.isFinished()) {

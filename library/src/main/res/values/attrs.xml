@@ -44,5 +44,7 @@
         <attr name="pieChartYOffset" format="dimension" />
         <attr name="enablePercent" format="boolean" />
         <attr name="enableLegend" format="boolean" />
+        <attr name="useDefaultColors" format="boolean" />
+        <attr name="legendOnRight" format="boolean" />
     </declare-styleable>
 </resources>
