@@ -16,14 +16,16 @@ import com.github.cris16228.libcore.R;
 import com.github.cris16228.libcore.models.PieChartModel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class PieChart extends View {
 
     double totalAmount = 0;
     private List<PieChartModel> pieChartModels = new ArrayList<>();
-    private List<String> titles = new ArrayList<>();
+    private Map<String, Double> slices = new HashMap<>();
     private int dataSize;
     private Scroller scroller;
     private int legendScrollY = 0;
@@ -35,61 +37,12 @@ public class PieChart extends View {
     private boolean enablePercent;
     private boolean enableLegend;
     private boolean useDefaultColors;
-    private List<Integer> colors;
+    private List<String> colors;
     private boolean legendOnRight;
     private int legendX;
     private int legendY;
 
-    private String[] colorString = {
-            "#5574a6ff",
-            "#3366ccff",
-            "#dc3912ff",
-            "#ff9900ff",
-            "#109618ff",
-            "#990099ff",
-            "#5574a6ff",
-            "#0099c6ff",
-            "#dd4477ff",
-            "#66aa00ff",
-            "#b82e2eff",
-            "#316395ff",
-            "#994499ff",
-            "#22aa99ff",
-            "#aaaa11ff",
-            "#6633ccff",
-            "#e67300ff",
-            "#8b0707ff",
-            "#651067ff",
-            "#329262ff",
-            "#63a8c0ff",
-            "#3b3eacff",
-            "#b77322ff",
-            "#16d620ff",
-            "#b91383ff",
-            "#f4359eff",
-            "#9c5935ff",
-            "#a9c413ff",
-            "#2a778dff",
-            "#668d1cff",
-            "#bea413ff",
-            "#0c5922ff",
-            "#3366ccff",
-            "#dc3912ff",
-            "#ff9900ff",
-            "#109618ff",
-            "#990099ff",
-            "#dd4477ff",
-            "#66aa00ff",
-            "#b82e2eff",
-            "#316395ff",
-            "#994499ff",
-            "#22aa99ff",
-            "#6633ccff",
-            "#e67300ff",
-            "#8b0707ff",
-            "#651067ff",
-            "#329262ff"
-    };
+    private String[] defaultColors = {"#AF7AC5", "#1ABC9C", "#DC7633", "#8E44AD", "#F7DC6F", "#D35400", "#3498DB", "#F0B27A", "#A569BD", "#fc3f8f", "#7FFF00", "#F1948A", "#2E86C1", "#9ACD32", "#c11b7b", "#FF6F61", "#1F618D", "#FF5733", "#28B463", "#76D7C4", "#D98880", "#6C3483", "#5499C7", "#C0392B", "#E67E22", "#900C3F", "#bc4017", "#FFD700", "#00FA9A", "#9B59B6", "#F1C40F", "#C70039", "#FF4500", "#E74C3C", "#7D3C98", "#00CED1", "#E59866", "#C39BD3", "#2874A6", "#FF69B4", "#F39C12", "#27AE60", "#FFC300", "#2ECC71", "#F8C471", "#16A085", "#2980B9", "#8A2BE2", "#5D6D7E", "#E9967A"};
 
     public PieChart(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -110,19 +63,23 @@ public class PieChart extends View {
 
     private void buildColors() {
         for (int i = 0; i < pieChartModels.size(); i++) {
-            try {
-                colors.add(Color.parseColor(colorString[i]));
-            } catch (IndexOutOfBoundsException e) {
-                colors.add(Color.parseColor(colorString[new Random().nextInt(colorString.length)]));
+            if (pieChartModels.get(i).getColor().isEmpty()) {
+                try {
+                    colors.add(defaultColors[i]);
+                } catch (IndexOutOfBoundsException e) {
+                    colors.add(defaultColors[new Random().nextInt(defaultColors.length)]);
+                }
             }
         }
     }
 
     public void setData(List<PieChartModel> pieChartModels) {
         this.pieChartModels.clear();
-        this.titles.clear();
+        this.slices.clear();
+        this.totalAmount = 0;
         this.pieChartModels = pieChartModels;
         dataSize = pieChartModels.size();
+        colors.clear();
     }
 
     public void setEnablePercent(boolean enablePercent) {
@@ -140,7 +97,7 @@ public class PieChart extends View {
 
 
         int width = 0;
-        int height = 0;
+        int height = pieChartSize;
 
         if (widthMode == MeasureSpec.EXACTLY) {
             width = widthSize;
@@ -153,16 +110,26 @@ public class PieChart extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         if (pieChartModels == null || pieChartModels.isEmpty()) {
             return;
         }
-
-        for (PieChartModel model : pieChartModels) {
-            titles.add(model.getTitle());
-            totalAmount += model.getValue();
+        slices.clear();
+        totalAmount = 0;
+        if (colors.isEmpty()) {
+            buildColors();
         }
 
+        for (PieChartModel model : pieChartModels) {
+            if (slices.containsKey(model.getTitle())) {
+                slices.put(model.getTitle(), slices.get(model.getTitle()) + model.getValue());
+            } else {
+                slices.put(model.getTitle(), model.getValue());
+            }
+        }
+
+        for (double value : slices.values()) {
+            totalAmount += value;
+        }
 
         float startAngle = 0;
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -185,36 +152,41 @@ public class PieChart extends View {
         );
 
         // Draw pie slices
-        for (PieChartModel model : pieChartModels) {
-            paint.setColor(model.getColor());
-            float sweepAngle = (float) (model.getValue() / totalAmount * 360);
+        for (Map.Entry<String, Double> entry : slices.entrySet()) {
+            int index = PieChartModel.getIndex(pieChartModels, entry.getKey());
+            PieChartModel model = pieChartModels.get(index);
+            paint.setColor(Color.parseColor(model.getColor().isEmpty() ? colors.get(index) : model.getColor()));
+            float sweepAngle = (float) (entry.getValue() / totalAmount * 360);
             canvas.drawArc(rect, startAngle, sweepAngle, true, paint);
             startAngle += sweepAngle;
         }
         canvas.save();
+        int legendLeft = legendX;
+        int legendTop = 0;
+        int legendRight = getWidth();
+        int legendBottom = getHeight();
+        canvas.clipRect(legendLeft, legendTop, legendRight, legendBottom);
         canvas.translate(0, legendScrollY);
         float legendY = rect.top + 50;
         paint.setTextSize(40);
-        for (int i = 0; i < pieChartModels.size(); i++) {
-            PieChartModel model = pieChartModels.get(i);
-            paint.setColor(Color.parseColor(String.format("#%06X", (0xFFFFFF & (model.getColor() == 0 ? colors.get(i) : model.getColor())))));
+        for (Map.Entry<String, Double> entry : slices.entrySet()) {
+            int index = PieChartModel.getIndex(pieChartModels, entry.getKey());
+            PieChartModel model = pieChartModels.get(index);
+            paint.setColor(Color.parseColor(model.getColor().isEmpty() ? colors.get(index) : model.getColor()));
             canvas.drawRect(legendX, legendY, getWidth() - legendWidth + 100, legendY + 40, paint);
             paint.setColor(Color.WHITE);
-            String percent = FloatUtils.getNumberFormat(((float) (model.getValue() / totalAmount) * 100), 2);
+            String percent = FloatUtils.getNumberFormat(((float) (entry.getValue() / totalAmount) * 100), 2);
             if (enableLegend) {
                 if (enablePercent) {
-                    canvas.drawText(getResources().getString(R.string.legend_text_percent, model.getTitle(), percent), pieChartSize + 120, legendY + 30, paint);
+                    canvas.drawText(getResources().getString(R.string.legend_text_percent, entry.getKey(), percent), pieChartSize + 120, legendY + 30, paint);
                 } else {
-                    canvas.drawText(getResources().getString(R.string.legend_text_no_percent, model.getTitle()), pieChartSize + 120, legendY + 30, paint);
+                    canvas.drawText(getResources().getString(R.string.legend_text_no_percent, entry.getKey()), pieChartSize + 120, legendY + 30, paint);
                 }
             }
             legendY += 60;
 
         }
         canvas.restore();
-        if (!scroller.isFinished()) {
-            invalidate();
-        }
     }
 
     @Override
@@ -240,11 +212,11 @@ public class PieChart extends View {
 
     private void scrollLegend(int dy) {
 
-        int totalLegendHeight = pieChartModels.size() * 60 + 90; // Total height of the legend
+        int totalLegendHeight = slices.size() * 60 + 90; // Total height of the legend
         int maxScrollY = Math.max(0, totalLegendHeight - getHeight());
         if (dy > 0) {
             if (legendScrollY - dy < 0) {
-                legendScrollY = 0;
+                legendScrollY += dy;
             } else {
                 legendScrollY -= dy;
             }
@@ -255,6 +227,10 @@ public class PieChart extends View {
                 legendScrollY += dy;
             }
         }
-        invalidate();
+        int legendLeft = legendX;
+        int legendTop = legendScrollY;
+        int legendRight = legendX + legendWidth;
+        int legendBottom = legendTop + totalLegendHeight;
+        invalidate(legendLeft, legendTop, legendRight, legendBottom);
     }
 }
