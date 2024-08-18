@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Base64;
 
-import com.github.cris16228.library.Base64Utils;
+import com.github.cris16228.libcore.Base64Utils;
 
 import java.util.Arrays;
 import java.util.Collections;

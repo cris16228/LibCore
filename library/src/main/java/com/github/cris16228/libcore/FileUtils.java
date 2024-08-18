@@ -13,6 +13,8 @@ import android.util.Log;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 
+import com.github.cris16228.libcore.http.image_loader.ImageLoader;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -87,6 +90,34 @@ public class FileUtils {
         } catch (FileNotFoundException exception) {
             return null;
         }
+    }
+
+    public void copyStream(InputStream is, OutputStream os, int contentLength, ImageLoader.DownloadProgress downloadProgress) {
+        try {
+            byte[] data = new byte[8388608];
+            int count;
+            long progress = 0;
+            while ((count = is.read(data, 0, data.length)) != -1) {
+                progress += count;
+                os.write(data, 0, count);
+                if (contentLength > 0) {
+                    if (downloadProgress != null) {
+                        downloadProgress.downloadInProgress(progress, contentLength);
+                    }
+                }
+            }
+            if (downloadProgress != null) {
+                downloadProgress.downloadComplete();
+            }
+            is.close();
+            os.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void copyStream(InputStream is, OutputStream os, int contentLength) {
+        copyStream(is, os, contentLength, null);
     }
 
     //Get saved base64 Image

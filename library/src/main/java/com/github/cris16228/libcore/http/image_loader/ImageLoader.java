@@ -16,11 +16,11 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.RawRes;
 
-import com.github.cris16228.library.Base64Utils;
-import com.github.cris16228.library.FileUtils;
-import com.github.cris16228.library.QueueUtils;
-import com.github.cris16228.library.http.image_loader.interfaces.ConnectionErrors;
-import com.github.cris16228.library.http.image_loader.interfaces.LoadImage;
+import com.github.cris16228.libcore.Base64Utils;
+import com.github.cris16228.libcore.FileUtils;
+import com.github.cris16228.libcore.QueueUtils;
+import com.github.cris16228.libcore.http.image_loader.interfaces.ConnectionErrors;
+import com.github.cris16228.libcore.http.image_loader.interfaces.LoadImage;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
