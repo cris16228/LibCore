@@ -224,7 +224,11 @@ public class PieChart extends View {
             if ((legendScrollY + dy) * -1 > maxScrollY) {
                 legendScrollY = maxScrollY * -1;
             } else {
-                legendScrollY += dy;
+                if (legendScrollY + dy > 0) {
+                    legendScrollY += dy;
+                } else {
+                    legendScrollY = 0;
+                }
             }
         }
         int legendLeft = legendX;

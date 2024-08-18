@@ -7,10 +7,15 @@ import androidx.annotation.NonNull;
 
 import com.github.cris16228.libcore.AsyncUtils;
 import com.github.cris16228.libcore.FileUtils;
+import com.github.cris16228.libcore.NetworkUtils;
+import com.github.cris16228.libcore.StringUtils;
 import com.github.cris16228.libcore.deviceutils.PackageUtils;
+import com.github.cris16228.libcore.http.HttpUtils;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -74,6 +79,24 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
 
             @Override
             public void doInBackground() {
+                String crashPath = FileUtils.with(app).getPersonalSpace(app) + "/crash-reports/";
+                if (FileUtils.with(app).getNewestFile(crashPath) != null) {
+                    if (NetworkUtils.with(app).isConnectedTo(app)) {
+                        File crashFile = FileUtils.with(app).getNewestFile(crashPath);
+                        HttpUtils httpUtils = HttpUtils.get();
+                        HashMap<String, String> params = new HashMap<>();
+                        params.put("app", app.getPackageName());
+                        params.put("action", "crash");
+                        if (!StringUtils.isEmpty(bearer)) {
+                            String result = String.valueOf(httpUtils.uploadFile("https://analytics.cris16228.com/upload.php", params, httpUtils.defaultFileParams(crashFile.getAbsolutePath()), bearer));
+                            Log.d("Response", result);
+                        } else {
+                            String result = String.valueOf(httpUtils.uploadFile("https://analytics.cris16228.com/upload.php", params, httpUtils.defaultFileParams(crashFile.getAbsolutePath())));
+                            Log.d("Response", result);
+                        }
+                        latch.countDown();
+                    }
+                }
             }
 
             @Override

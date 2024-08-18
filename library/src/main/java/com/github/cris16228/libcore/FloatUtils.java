@@ -19,7 +19,7 @@ public class FloatUtils {
     }
 
     public static String getNumberFormat(Object value, int limit) {
-        if (limit <= 0) {
+        if (limit < 0) {
             return "NaN";
         }
         float tempFloat;
@@ -42,7 +42,7 @@ public class FloatUtils {
     }
 
     public static String getNumberFormatSmart(Object value, int limit) {
-        if (limit <= 0) {
+        if (limit < 0) {
             return "NaN";
         }
         float tempFloat;
@@ -71,7 +71,7 @@ public class FloatUtils {
 
     public static String getNumberFormat(Object value, int limit, Context context) {
         FileUtils fileUtils = FileUtils.with(context);
-        if (limit <= 0) {
+        if (limit < 0) {
             fileUtils.debugLog(limit + " is not valid! It must be higher than 0");
             return "NaN";
         }
