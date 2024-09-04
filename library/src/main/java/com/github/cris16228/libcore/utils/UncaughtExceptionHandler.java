@@ -25,20 +25,23 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
     private final Thread.UncaughtExceptionHandler defaultUEH;
     private final Activity app;
     private final String bearer;
-    private final boolean wifiAccess;
+    private final boolean reportCrash;
+    private final String url;
 
-    public UncaughtExceptionHandler(Activity app, boolean wifiAccess) {
+    public UncaughtExceptionHandler(Activity app, boolean reportCrash, String url) {
         this.defaultUEH = Thread.getDefaultUncaughtExceptionHandler();
         this.app = app;
         this.bearer = "";
-        this.wifiAccess = wifiAccess;
+        this.reportCrash = reportCrash;
+        this.url = url;
     }
 
-    public UncaughtExceptionHandler(Activity app, String bearer, boolean wifiAccess) {
+    public UncaughtExceptionHandler(Activity app, String bearer, boolean reportCrash, String url) {
         this.defaultUEH = Thread.getDefaultUncaughtExceptionHandler();
         this.app = app;
         this.bearer = bearer;
-        this.wifiAccess = wifiAccess;
+        this.reportCrash = reportCrash;
+        this.url = url;
     }
 
     @Override
@@ -79,22 +82,24 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
 
             @Override
             public void doInBackground() {
-                String crashPath = FileUtils.with(app).getPersonalSpace(app) + "/crash-reports/";
-                if (FileUtils.with(app).getNewestFile(crashPath) != null) {
-                    if (NetworkUtils.with(app).isConnectedTo(app)) {
-                        File crashFile = FileUtils.with(app).getNewestFile(crashPath);
-                        HttpUtils httpUtils = HttpUtils.get();
-                        HashMap<String, String> params = new HashMap<>();
-                        params.put("app", app.getPackageName());
-                        params.put("action", "crash");
-                        if (!StringUtils.isEmpty(bearer)) {
-                            String result = String.valueOf(httpUtils.uploadFile("https://analytics.cris16228.com/upload.php", params, httpUtils.defaultFileParams(crashFile.getAbsolutePath()), bearer));
-                            Log.d("Response", result);
-                        } else {
-                            String result = String.valueOf(httpUtils.uploadFile("https://analytics.cris16228.com/upload.php", params, httpUtils.defaultFileParams(crashFile.getAbsolutePath())));
-                            Log.d("Response", result);
+                if (reportCrash) {
+                    String crashPath = FileUtils.with(app).getPersonalSpace(app) + "/crash-reports/";
+                    if (FileUtils.with(app).getNewestFile(crashPath) != null) {
+                        if (NetworkUtils.with(app).isConnectedTo(app)) {
+                            File crashFile = FileUtils.with(app).getNewestFile(crashPath);
+                            HttpUtils httpUtils = HttpUtils.get();
+                            HashMap<String, String> params = new HashMap<>();
+                            params.put("app", app.getPackageName());
+                            params.put("action", "crash");
+                            if (!StringUtils.isEmpty(bearer)) {
+                                String result = String.valueOf(httpUtils.uploadFile(url, params, httpUtils.defaultFileParams(crashFile.getAbsolutePath()), bearer));
+                                Log.d("Response", result);
+                            } else {
+                                String result = String.valueOf(httpUtils.uploadFile(url, params, httpUtils.defaultFileParams(crashFile.getAbsolutePath())));
+                                Log.d("Response", result);
+                            }
+                            latch.countDown();
                         }
-                        latch.countDown();
                     }
                 }
             }
