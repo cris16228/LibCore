@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.github.cris16228.libcore.StringUtils;
 import com.github.cris16228.libcore.deviceutils.DeviceUtils;
@@ -207,13 +208,6 @@ public class HttpUtils {
         this.cookies = cookies;
     }
 
-    public void setCookies(HttpURLConnection httpURLConnection) {
-        if (!cookies.isEmpty()) {
-            String cookieHeader = String.join("; ", cookies);
-            httpURLConnection.setRequestProperty("Cookie", cookieHeader);
-        }
-    }
-
     public void getCookies(HttpURLConnection httpURLConnection) {
         Map<String, List<String>> headerFields = httpURLConnection.getHeaderFields();
         List<String> setCookies = headerFields.get("Set-Cookie");
@@ -225,7 +219,7 @@ public class HttpUtils {
         }
     }
 
-    private @NonNull HttpURLConnection getHttpURLConnection(String _url) throws IOException {
+    private @NonNull HttpURLConnection getHttpURLConnection(String _url, HashMap<String, String> headers) throws IOException {
         URL url = new URL(_url);
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setUseCaches(false);
@@ -235,19 +229,24 @@ public class HttpUtils {
         urlConnection.setDoInput(true);
         urlConnection.setRequestMethod("POST");
         urlConnection.setRequestProperty("Content-Type", "application/json");
-        if (!cookies.isEmpty()) {
-            String cookieHeader = String.join("; ", cookies);
-            urlConnection.setRequestProperty("Cookie", cookieHeader);
+        if (headers != null) {
+            for (String key : headers.keySet()) {
+                urlConnection.setRequestProperty(key, headers.get(key));
+            }
         }
         return urlConnection;
     }
 
     public String post(String _url, HashMap<String, String> params) {
+        return post(_url, params, null);
+    }
+
+    public String post(String _url, HashMap<String, String> params, @Nullable HashMap<String, String> headers) {
         if (TextUtils.isEmpty(_url))
             url = _url;
         result = new StringBuilder();
         try {
-            HttpURLConnection urlConnection = getHttpURLConnection(_url);
+            HttpURLConnection urlConnection = getHttpURLConnection(_url, headers);
 
             OutputStream os = urlConnection.getOutputStream();
             BufferedWriter writer = new BufferedWriter(
