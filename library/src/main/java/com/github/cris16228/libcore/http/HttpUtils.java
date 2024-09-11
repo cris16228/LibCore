@@ -197,9 +197,24 @@ public class HttpUtils {
         }
     }
 
-    private static List<String> cookies = new ArrayList<>();
+    private List<String> cookies = new ArrayList<>();
 
-    public static void getCookies(HttpURLConnection httpURLConnection) {
+    public List<String> getCookies() {
+        return cookies;
+    }
+
+    public void setCookies(List<String> cookies) {
+        this.cookies = cookies;
+    }
+
+    public void setCookies(HttpURLConnection httpURLConnection) {
+        if (!cookies.isEmpty()) {
+            String cookieHeader = String.join("; ", cookies);
+            httpURLConnection.setRequestProperty("Cookie", cookieHeader);
+        }
+    }
+
+    public void getCookies(HttpURLConnection httpURLConnection) {
         Map<String, List<String>> headerFields = httpURLConnection.getHeaderFields();
         List<String> setCookies = headerFields.get("Set-Cookie");
         if (setCookies != null) {
@@ -207,13 +222,6 @@ public class HttpUtils {
                 String[] cookieParts = cookie.split(";");
                 cookies.add(cookieParts[0]);
             }
-        }
-    }
-
-    public static void setCookies(HttpURLConnection httpURLConnection) {
-        if (!cookies.isEmpty()) {
-            String cookieHeader = String.join("; ", cookies);
-            httpURLConnection.setRequestProperty("Cookie", cookieHeader);
         }
     }
 
