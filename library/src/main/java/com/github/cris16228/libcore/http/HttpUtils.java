@@ -230,8 +230,8 @@ public class HttpUtils {
         urlConnection.setRequestMethod("POST");
         urlConnection.setRequestProperty("Content-Type", "application/json");
         if (headers != null) {
-            for (String key : headers.keySet()) {
-                urlConnection.setRequestProperty(key, headers.get(key));
+            for (Map.Entry<String, String> header : headers.entrySet()) {
+                urlConnection.setRequestProperty(header.getKey(), header.getValue());
             }
         }
         return urlConnection;
