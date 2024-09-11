@@ -225,7 +225,7 @@ public class HttpUtils {
         }
     }
 
-    private static @NonNull HttpURLConnection getHttpURLConnection(String _url) throws IOException {
+    private @NonNull HttpURLConnection getHttpURLConnection(String _url) throws IOException {
         URL url = new URL(_url);
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setUseCaches(false);
@@ -235,6 +235,10 @@ public class HttpUtils {
         urlConnection.setDoInput(true);
         urlConnection.setRequestMethod("POST");
         urlConnection.setRequestProperty("Content-Type", "application/json");
+        if (!cookies.isEmpty()) {
+            String cookieHeader = String.join("; ", cookies);
+            urlConnection.setRequestProperty("Cookie", cookieHeader);
+        }
         return urlConnection;
     }
 
