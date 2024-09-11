@@ -32,7 +32,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HttpUtils {
@@ -195,6 +197,38 @@ public class HttpUtils {
         }
     }
 
+    private static List<String> cookies = new ArrayList<>();
+
+    public static void getCookies(HttpURLConnection httpURLConnection) {
+        Map<String, List<String>> headerFields = httpURLConnection.getHeaderFields();
+        List<String> setCookies = headerFields.get("Set-Cookie");
+        if (setCookies != null) {
+            for (String cookie : setCookies) {
+                String[] cookieParts = cookie.split(";");
+                cookies.add(cookieParts[0]);
+            }
+        }
+    }
+
+    public static void setCookies(HttpURLConnection httpURLConnection) {
+        if (!cookies.isEmpty()) {
+            String cookieHeader = String.join("; ", cookies);
+            httpURLConnection.setRequestProperty("Cookie", cookieHeader);
+        }
+    }
+
+    private static @NonNull HttpURLConnection getHttpURLConnection(String _url) throws IOException {
+        URL url = new URL(_url);
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setUseCaches(false);
+        urlConnection.setReadTimeout(5000);
+        urlConnection.setConnectTimeout(5000);
+        urlConnection.setDoOutput(true);
+        urlConnection.setDoInput(true);
+        urlConnection.setRequestMethod("POST");
+        urlConnection.setRequestProperty("Content-Type", "application/json");
+        return urlConnection;
+    }
 
     public String post(String _url, HashMap<String, String> params) {
         if (TextUtils.isEmpty(_url))
@@ -225,33 +259,26 @@ public class HttpUtils {
             writer.close();
             os.close();
             try {
-                int responseCode = urlConnection.getResponseCode();
-                InputStream in;
-                if (urlConnection.getResponseCode() >= 200 && urlConnection.getResponseCode() <= 400) {
-                    in = urlConnection.getInputStream();
-                } else {
-                    in = urlConnection.getErrorStream();
-                }
-                BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(in)));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    result.append(line);
-                }
+                BufferedReader reader = getBufferedReader(urlConnection);
                 if (debug)
                     System.out.println(result);
                 reader.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            getCookies(urlConnection);
             urlConnection.disconnect();
         } catch (Exception ignored) {
 
         }
 
+        if (StringUtils.isEmpty(result.toString()))
+            return result.toString();
         try {
             jsonObject = new JSONObject(result.toString());
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing data " + e);
+            Log.e(TAG, result.toString());
         }
 
         if (debug)
@@ -259,18 +286,21 @@ public class HttpUtils {
         return result.toString();
     }
 
-    private static @NonNull HttpURLConnection getHttpURLConnection(String _url) throws IOException {
-        URL url = new URL(_url);
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        urlConnection.setUseCaches(false);
-        urlConnection.setReadTimeout(5000);
-        urlConnection.setConnectTimeout(5000);
-        urlConnection.setDoOutput(true);
-        urlConnection.setDoInput(true);
-        urlConnection.setRequestMethod("POST");
-        urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        urlConnection.connect();
-        return urlConnection;
+    private @NonNull BufferedReader getBufferedReader(HttpURLConnection urlConnection) throws IOException {
+        int responseCode = urlConnection.getResponseCode();
+        System.out.println(responseCode);
+        InputStream in;
+        if (responseCode >= 200 && responseCode <= 400) {
+            in = urlConnection.getInputStream();
+        } else {
+            in = urlConnection.getErrorStream();
+        }
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(in)));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            result.append(line);
+        }
+        return reader;
     }
 
     public JSONObject uploadFile(String _url, HashMap<String, String> params, HashMap<String, String> files) {
