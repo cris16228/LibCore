@@ -12,31 +12,30 @@ import android.text.style.StyleSpan;
 import android.text.style.SuperscriptSpan;
 import android.text.style.UnderlineSpan;
 import android.util.AttributeSet;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.appcompat.widget.AppCompatEditText;
+import androidx.appcompat.widget.AppCompatTextView;
 
 import com.github.cris16228.libcore.StringUtils;
 
 import java.lang.reflect.Field;
 
-public class MarkdownEditText extends AppCompatEditText {
+public class MarkdownTextView extends AppCompatTextView {
 
     private char escapeCharacter = '\\';
     private String originalText;
 
-    public MarkdownEditText(@NonNull Context context) {
+    public MarkdownTextView(@NonNull Context context) {
         super(context);
     }
 
-    public MarkdownEditText(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public MarkdownTextView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public MarkdownEditText(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public MarkdownTextView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
@@ -68,12 +67,9 @@ public class MarkdownEditText extends AppCompatEditText {
             originalText = text.toString();
             Spannable markdownText = parseMarkdown(text.toString());
             try {
-                Field mTextField = AppCompatEditText.class.getDeclaredField("mText");
+                Field mTextField = AppCompatTextView.class.getDeclaredField("mText");
                 mTextField.setAccessible(true);
                 mTextField.set(this, markdownText);
-                Field mBufferType = TextView.class.getDeclaredField("mBufferType");
-                mBufferType.setAccessible(true);
-                mBufferType.set(this, BufferType.SPANNABLE);
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 e.printStackTrace();
             }

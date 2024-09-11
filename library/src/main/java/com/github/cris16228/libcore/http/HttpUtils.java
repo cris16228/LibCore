@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Map;
 
 public class HttpUtils {
 
@@ -200,34 +201,22 @@ public class HttpUtils {
             url = _url;
         result = new StringBuilder();
         try {
-            URL url = new URL(_url);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-
-            urlConnection.setUseCaches(false);
-            urlConnection.setReadTimeout(5000);
-            urlConnection.setConnectTimeout(5000);
-            urlConnection.setDoOutput(true);
-            urlConnection.setDoInput(true);
-            urlConnection.setRequestMethod("POST");
-
-            urlConnection.connect();
-
+            HttpURLConnection urlConnection = getHttpURLConnection(_url);
 
             OutputStream os = urlConnection.getOutputStream();
             BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(os, StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
-            boolean flag = false;
-            for (String key : params.keySet()) {
-                try {
-                    if (flag) {
-                        sb.append("&");
-                    }
-                    sb.append(key).append("=").append(URLEncoder.encode(params.get(key), "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+            boolean first = true;
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append("&");
                 }
-                flag = true;
+                sb.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
+                        .append("=")
+                        .append(URLEncoder.encode(entry.getValue(), "UTF-8"));
             }
             if (debug)
                 System.out.println(sb);
@@ -236,6 +225,7 @@ public class HttpUtils {
             writer.close();
             os.close();
             try {
+                int responseCode = urlConnection.getResponseCode();
                 InputStream in;
                 if (urlConnection.getResponseCode() >= 200 && urlConnection.getResponseCode() <= 400) {
                     in = urlConnection.getInputStream();
@@ -267,6 +257,20 @@ public class HttpUtils {
         if (debug)
             System.out.println(jsonObject);
         return result.toString();
+    }
+
+    private static @NonNull HttpURLConnection getHttpURLConnection(String _url) throws IOException {
+        URL url = new URL(_url);
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setUseCaches(false);
+        urlConnection.setReadTimeout(5000);
+        urlConnection.setConnectTimeout(5000);
+        urlConnection.setDoOutput(true);
+        urlConnection.setDoInput(true);
+        urlConnection.setRequestMethod("POST");
+        urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        urlConnection.connect();
+        return urlConnection;
     }
 
     public JSONObject uploadFile(String _url, HashMap<String, String> params, HashMap<String, String> files) {
