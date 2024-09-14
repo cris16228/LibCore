@@ -1,6 +1,7 @@
 package com.github.cris16228.libcore.utils;
 
 import android.app.Activity;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -55,7 +56,11 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
                 StringBuilder report = new StringBuilder();
                 report.append("\n");
                 report.append("App: ").append(PackageUtils.with(app).getAppName(app.getPackageName())).append("\n");
-                report.append("Version: ").append(PackageUtils.with(app).appFromPackage(app.getPackageName()).getLongVersionCode()).append("\n");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    report.append("Version: ").append(PackageUtils.with(app).appFromPackage(app.getPackageName()).getLongVersionCode()).append("\n");
+                } else {
+                    report.append("Version: ").append(PackageUtils.with(app).appFromPackage(app.getPackageName()).versionCode).append("\n");
+                }
                 report.append("Package: ").append(app.getPackageName()).append("\n");
                 report.append("VersionCode: ").append(PackageUtils.with(app).appFromPackage(app.getPackageName()).versionName).append("\n");
                 report.append("Error: ").append(e).append("\n").append("\n");
@@ -81,7 +86,7 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
             }
 
             @Override
-            public void doInBackground() {
+            public <T> T doInBackground() {
                 if (reportCrash) {
                     String crashPath = FileUtils.with(app).getPersonalSpace(app) + "/crash-reports/";
                     if (FileUtils.with(app).getNewestFile(crashPath) != null) {
@@ -102,13 +107,18 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
                         }
                     }
                 }
+                return null;
             }
 
             @Override
             public void postDelayed() {
             }
         });
-        uploadCrash.execute();
+        try {
+            uploadCrash.execute();
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
         try {
             if (!latch.await(2, TimeUnit.SECONDS)) {
                 Log.e("UncaughtException", "Timeout waiting for AsyncTask to complete");
