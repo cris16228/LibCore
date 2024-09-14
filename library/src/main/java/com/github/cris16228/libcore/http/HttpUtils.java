@@ -65,7 +65,9 @@ public class HttpUtils {
         return httpUtils;
     }
 
-    public static String getJSON(String urlString, boolean printJSON) {
+    private List<String> cookies = new ArrayList<>();
+
+    public String get(String urlString) {
         HttpURLConnection urlConnection;
         StringBuilder sb = new StringBuilder();
         String jsonString = null;
@@ -83,50 +85,14 @@ public class HttpUtils {
                 urlConnection.setReadTimeout(httpUtils.readTimeout /* milliseconds */);
                 urlConnection.setConnectTimeout(httpUtils.connectionTimeout /* milliseconds */);
                 urlConnection.setDoOutput(true);
-
-                urlConnection.connect();
-                BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+                BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
                 String line;
                 while ((line = br.readLine()) != null) {
                     sb.append(line).append("\n");
                 }
                 br.close();
                 jsonString = sb.toString();
-                if (printJSON && DeviceUtils.isEmulator())
-                    System.out.println("JSON: " + jsonString);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return jsonString;
-    }
-
-    public static String getJSON(String urlString, boolean printJSON, int readTimeout, int connectionTimeout) {
-        HttpURLConnection urlConnection;
-        StringBuilder sb = new StringBuilder();
-        String jsonString = null;
-        URL url = null;
-        try {
-            url = new URL(urlString);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        try {
-            if (url != null) {
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.setReadTimeout(readTimeout /* milliseconds */);
-                urlConnection.setConnectTimeout(connectionTimeout /* milliseconds */);
-                urlConnection.setDoOutput(true);
-                urlConnection.connect();
-                BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line).append("\n");
-                }
-                br.close();
-                jsonString = sb.toString();
-                if (printJSON || DeviceUtils.isEmulator())
+                if (DeviceUtils.isEmulator())
                     System.out.println("JSON: " + jsonString);
             }
         } catch (IOException e) {
@@ -137,23 +103,6 @@ public class HttpUtils {
 
     public boolean postSuccess() {
         return !StringUtils.isEmpty(result.toString());
-    }
-
-    public HashMap<String, String> defaultParams() {
-        HashMap<String, String> params = new HashMap<>();
-        params.put("user", "cris16228");
-        params.put("action", "upload");
-        return params;
-    }
-
-    public HashMap<String, String> setParams(@NonNull String[] keys, @NonNull String[] values) {
-        HashMap<String, String> params = new HashMap<>();
-        for (String key : keys) {
-            for (String value : values) {
-                params.put(key, value);
-            }
-        }
-        return params;
     }
 
     public HashMap<String, String> defaultFileParams(String path) {
@@ -198,47 +147,41 @@ public class HttpUtils {
         }
     }
 
-    private List<String> cookies = new ArrayList<>();
-
-    public List<String> getCookies() {
-        return cookies;
-    }
-
-    public void setCookies(List<String> cookies) {
-        this.cookies = cookies;
-    }
-
-    public void getCookies(HttpURLConnection httpURLConnection) {
-        Map<String, List<String>> headerFields = httpURLConnection.getHeaderFields();
-        List<String> setCookies = headerFields.get("Set-Cookie");
-        if (setCookies != null) {
-            for (String cookie : setCookies) {
-                String[] cookieParts = cookie.split(";");
-                cookies.add(cookieParts[0]);
-            }
-        }
-    }
-
-    private @NonNull HttpURLConnection getHttpURLConnection(String _url, HashMap<String, String> headers) throws IOException {
-        URL url = new URL(_url);
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        urlConnection.setUseCaches(false);
-        urlConnection.setReadTimeout(5000);
-        urlConnection.setConnectTimeout(5000);
-        urlConnection.setDoOutput(true);
-        urlConnection.setDoInput(true);
-        urlConnection.setRequestMethod("POST");
-        urlConnection.setRequestProperty("Content-Type", "application/json");
-        if (headers != null) {
-            for (Map.Entry<String, String> header : headers.entrySet()) {
-                urlConnection.setRequestProperty(header.getKey(), header.getValue());
-            }
-        }
-        return urlConnection;
-    }
-
     public String post(String _url, HashMap<String, String> params) {
         return post(_url, params, null);
+    }
+
+    public String get(String urlString, boolean printJSON, int readTimeout, int connectionTimeout) {
+        HttpURLConnection urlConnection;
+        StringBuilder sb = new StringBuilder();
+        String jsonString = null;
+        URL url = null;
+        try {
+            url = new URL(urlString);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (url != null) {
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.setReadTimeout(readTimeout /* milliseconds */);
+                urlConnection.setConnectTimeout(connectionTimeout /* milliseconds */);
+                urlConnection.setDoOutput(true);
+                BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+                br.close();
+                jsonString = sb.toString();
+                if (printJSON || DeviceUtils.isEmulator())
+                    System.out.println("JSON: " + jsonString);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return jsonString;
     }
 
     public String post(String _url, HashMap<String, String> params, @Nullable HashMap<String, String> headers) {
@@ -279,8 +222,8 @@ public class HttpUtils {
             }
             getCookies(urlConnection);
             urlConnection.disconnect();
-        } catch (Exception ignored) {
-
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         if (StringUtils.isEmpty(result.toString()))
@@ -295,6 +238,43 @@ public class HttpUtils {
         if (debug)
             System.out.println(jsonObject);
         return result.toString();
+    }
+
+    public List<String> getCookies() {
+        return cookies;
+    }
+
+    public void setCookies(List<String> cookies) {
+        this.cookies = cookies;
+    }
+
+    public void getCookies(HttpURLConnection httpURLConnection) {
+        Map<String, List<String>> headerFields = httpURLConnection.getHeaderFields();
+        List<String> setCookies = headerFields.get("Set-Cookie");
+        if (setCookies != null) {
+            for (String cookie : setCookies) {
+                String[] cookieParts = cookie.split(";");
+                cookies.add(cookieParts[0]);
+            }
+        }
+    }
+
+    private @NonNull HttpURLConnection getHttpURLConnection(String _url, HashMap<String, String> headers) throws IOException {
+        URL url = new URL(_url);
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setUseCaches(false);
+        urlConnection.setReadTimeout(5000);
+        urlConnection.setConnectTimeout(5000);
+        urlConnection.setDoOutput(true);
+        urlConnection.setDoInput(true);
+        urlConnection.setRequestMethod("POST");
+        urlConnection.setRequestProperty("Content-Type", "application/json");
+        if (headers != null) {
+            for (Map.Entry<String, String> header : headers.entrySet()) {
+                urlConnection.setRequestProperty(header.getKey(), header.getValue());
+            }
+        }
+        return urlConnection;
     }
 
     private @NonNull BufferedReader getBufferedReader(HttpURLConnection urlConnection) throws IOException {
