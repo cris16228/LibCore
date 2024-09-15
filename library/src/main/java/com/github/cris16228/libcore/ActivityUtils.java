@@ -112,13 +112,11 @@ public class ActivityUtils {
         window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         final View decorView = window.getDecorView();
-        if (decorView != null) {
-            int uiOption = decorView.getSystemUiVisibility();
-            uiOption &= ~View.SYSTEM_UI_FLAG_LOW_PROFILE;
-            uiOption &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-            uiOption &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            decorView.setSystemUiVisibility(uiOption);
-        }
+        int uiOption = decorView.getSystemUiVisibility();
+        uiOption &= ~View.SYSTEM_UI_FLAG_LOW_PROFILE;
+        uiOption &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        uiOption &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        decorView.setSystemUiVisibility(uiOption);
     }
 
     public void startActivity(Context currentActivity, Class<?> destinationActivity) {
@@ -149,6 +147,15 @@ public class ActivityUtils {
         for (int flag : flags) {
             activity.addFlags(flag);
         }
+        currentActivity.startActivity(activity);
+    }
+
+    public void startActivity(Context currentActivity, Class<?> destinationActivity, @ContentInfoCompat.Flags int[] flags, Bundle bundle) {
+        Intent activity = new Intent(currentActivity, destinationActivity);
+        for (int flag : flags) {
+            activity.addFlags(flag);
+        }
+        activity.putExtras(bundle);
         currentActivity.startActivity(activity);
     }
 
