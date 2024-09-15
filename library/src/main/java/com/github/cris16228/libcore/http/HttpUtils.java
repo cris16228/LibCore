@@ -2,6 +2,7 @@ package com.github.cris16228.libcore.http;
 
 import android.text.TextUtils;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -67,36 +68,71 @@ public class HttpUtils {
 
     private List<String> cookies = new ArrayList<>();
 
-    public String get(String urlString) {
+    public static String get(String urlString, Map<String, String> headers) {
         HttpURLConnection urlConnection;
         StringBuilder sb = new StringBuilder();
         String jsonString = null;
         URL url = null;
         try {
             url = new URL(urlString);
+            System.out.println(url);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        HttpUtils httpUtils = new HttpUtils();
         try {
             if (url != null) {
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
-                urlConnection.setReadTimeout(httpUtils.readTimeout /* milliseconds */);
-                urlConnection.setConnectTimeout(httpUtils.connectionTimeout /* milliseconds */);
+                urlConnection.setReadTimeout(10000);
+                urlConnection.setConnectTimeout(10000);
+                urlConnection.setInstanceFollowRedirects(true);
                 urlConnection.setDoOutput(true);
+                urlConnection.setDoInput(true);
+                urlConnection.setRequestProperty("Accept", "*/*");
+                urlConnection.setRequestProperty("Connection", "Keep-Alive");
+                urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
+                if (headers != null && !headers.isEmpty()) {
+                    for (Map.Entry<String, String> entry : headers.entrySet()) {
+                        urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
+                    }
+                }
                 String contentType = urlConnection.getHeaderField("Content-Type");
                 if (contentType != null) {
                     String htmlContent;
                     String title = url.toString().substring(url.toString().lastIndexOf("/") + 1);
                     if (contentType.startsWith("image/")) {
                         try {
-                            htmlContent = "<html><head><<title>" + title + "</title></head><body><img src=\"" + urlString + "\" /></body></html>";
+                            htmlContent = "<html><head><meta property=\"og:image\" content=\"" + urlString + "\"><title>" + title + "</title></head><body><img src=\"" + urlString + "\" /></body" +
+                                    "></html>";
                         } catch (Exception e) {
                             e.printStackTrace();
                             htmlContent = "<html><head><title>" + title + "</title></head><body><p>Error loading image.<p/></body></html>";
                         }
                         sb.append(htmlContent);
+                    }
+                    if (contentType.startsWith("application/xml")) {
+                        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(urlString));
+                        if (mimeType != null) {
+                            if (mimeType.startsWith("image/")) {
+                                try {
+                                    htmlContent = "<html><head><meta property=\"og:image\" content=\"" + urlString + "\"><title>" + title + "</title></head><body><img src=\"" + urlString + "\" /></body" +
+                                            "></html>";
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    htmlContent = "<html><head><title>" + title + "</title></head><body><p>Error loading image.<p/></body></html>";
+                                }
+                                sb.append(htmlContent);
+                            }
+                        } else if (mimeType.startsWith("video/")) {
+                            try {
+                                htmlContent = "<html><head><meta property=\"og:image\" content=\"" + urlString + "\"><title>" + title + "</title></head><body><video src=\"" + urlString + "\" " +
+                                        "type=\"video/" + MimeTypeMap.getFileExtensionFromUrl(urlString) + "\" /></body></html>";
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                htmlContent = "<html><head><title>" + title + "</title></head><body><p>Error loading image.<p/></body></html>";
+                            }
+                            sb.append(htmlContent);
+                        }
                     }
                     if (contentType.startsWith("video/")) {
                         try {
@@ -128,6 +164,10 @@ public class HttpUtils {
             e.printStackTrace();
         }
         return jsonString;
+    }
+
+    public String get(String url) {
+        return get(url, null);
     }
 
     public boolean postSuccess() {
