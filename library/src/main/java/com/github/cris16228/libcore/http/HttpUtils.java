@@ -85,12 +85,41 @@ public class HttpUtils {
                 urlConnection.setReadTimeout(httpUtils.readTimeout /* milliseconds */);
                 urlConnection.setConnectTimeout(httpUtils.connectionTimeout /* milliseconds */);
                 urlConnection.setDoOutput(true);
-                BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line).append("\n");
+                String contentType = urlConnection.getHeaderField("Content-Type");
+                if (contentType != null) {
+                    String htmlContent;
+                    String title = url.toString().substring(url.toString().lastIndexOf("/") + 1);
+                    if (contentType.startsWith("image/")) {
+                        try {
+                            htmlContent = "<html><head><<title>" + title + "</title></head><body><img src=\"" + urlString + "\" /></body></html>";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            htmlContent = "<html><head><title>" + title + "</title></head><body><p>Error loading image.<p/></body></html>";
+                        }
+                        sb.append(htmlContent);
+                    }
+                    if (contentType.startsWith("video/")) {
+                        try {
+                            String extension = urlString.substring(urlString.lastIndexOf("."));
+                            htmlContent = "<html><head><title>" + title + "</title></head><body><video src=\"" + urlString + "\" type=\"video/" + extension + "\" /></body></html>";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            htmlContent = "<html><head><title>" + title + "</title></head><body><p>Error loading video.<p/></body></html>";
+                        }
+                        sb.append(htmlContent);
+                    } else if (contentType.startsWith("text/html")) {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line).append("\n");
+                        }
+                        br.close();
+                    } else {
+                        title = "Error";
+                        htmlContent = "<html><head><title>" + title + "</title></head><body><p>Error loading url.<p/></body></html>";
+                        sb.append(htmlContent);
+                    }
                 }
-                br.close();
                 jsonString = sb.toString();
                 if (DeviceUtils.isEmulator())
                     System.out.println("JSON: " + jsonString);
