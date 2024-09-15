@@ -68,7 +68,7 @@ public class HttpUtils {
 
     private List<String> cookies = new ArrayList<>();
 
-    public static String get(String urlString, Map<String, String> headers) {
+    public String get(String urlString, Map<String, String> headers) {
         HttpURLConnection urlConnection;
         StringBuilder sb = new StringBuilder();
         String jsonString = null;

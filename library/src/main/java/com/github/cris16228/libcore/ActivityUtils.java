@@ -75,7 +75,7 @@ public class ActivityUtils {
         return mBackPressed = System.currentTimeMillis();
     }
 
-    public void delayActivity(Class<?> destinationActivity, long delay, boolean finish, Bundle... bundles) {
+    public void delayActivity(Class<?> destinationActivity, long delay, boolean finish, Bundle bundles) {
         if (delay <= 0) {
             startActivity(context, destinationActivity, bundles);
             if (finish)
@@ -137,12 +137,10 @@ public class ActivityUtils {
         currentActivity.startActivity(activity);
     }
 
-    public void startActivity(Context currentActivity, Class<?> destinationActivity, Bundle... bundles) {
+    public void startActivity(Context currentActivity, Class<?> destinationActivity, Bundle bundles) {
         Intent activity = new Intent(currentActivity, destinationActivity);
         activity.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        for (Bundle bundle : bundles) {
-            activity.putExtras(bundle);
-        }
+        activity.putExtras(bundles);
         currentActivity.startActivity(activity);
     }
 
