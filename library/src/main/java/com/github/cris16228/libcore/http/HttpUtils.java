@@ -75,7 +75,6 @@ public class HttpUtils {
         URL url = null;
         try {
             url = new URL(urlString);
-            System.out.println(url);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -151,9 +150,17 @@ public class HttpUtils {
                         }
                         br.close();
                     } else {
-                        title = "Error";
-                        htmlContent = "<html><head><title>" + title + "</title></head><body><p>Error loading url.<p/></body></html>";
-                        sb.append(htmlContent);
+                        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line).append("\n");
+                        }
+                        br.close();
+                        if (sb.toString().isEmpty()) {
+                            title = "Error";
+                            htmlContent = "<html><head><title>" + title + "</title></head><body><p>Error loading url.<p/></body></html>";
+                            sb.append(htmlContent);
+                        }
                     }
                 }
                 jsonString = sb.toString();
