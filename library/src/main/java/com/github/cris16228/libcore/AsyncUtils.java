@@ -46,26 +46,17 @@ public class AsyncUtils {
         onUIUpdate = _onUIUpdate;
     }
 
-    public <T> T execute(onExecuteListener _onExecuteListener) throws InterruptedException {
-        final Object lock = new Object();
-        final T[] result = (T[]) new Object[1];
+    public <T> void execute(onExecuteListener<T> _onExecuteListener) throws InterruptedException {
         _onExecuteListener.preExecute();
         executor.execute(() -> {
-            result[0] = (T) _onExecuteListener.doInBackground();
-
-            synchronized (lock) {
-                lock.notifyAll();
-            }
-
+            T result = _onExecuteListener.doInBackground();
             handler.post(() -> {
                 _onExecuteListener.postDelayed();
-                if (onUIUpdate != null) onUIUpdate.updateUI();
+                if (onUIUpdate != null) {
+                    onUIUpdate.updateUI();
+                }
             });
         });
-        synchronized (lock) {
-            lock.wait();
-        }
-        return result[0];
     }
 
     public interface onExecuteListener<T> {
