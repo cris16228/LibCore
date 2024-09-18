@@ -47,8 +47,8 @@
 
     <style name="TextInputLayout.MainColors" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <item name="boxStrokeColor">@color/white</item>
-        <item name="hintTextColor">@color/colorPrimaryLightMain</item>
-        <item name="placeholderTextColor">@color/colorPrimaryLightMain</item>
+        <item name="hintTextColor">@color/colorAccent</item>
+        <item name="placeholderTextColor">@color/colorAccent</item>
         <item name="boxStrokeWidthFocused">3dp</item>
         <item name="boxStrokeWidth">3dp</item>
     </style>
