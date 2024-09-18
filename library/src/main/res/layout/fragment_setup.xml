@@ -38,9 +38,9 @@
             android:layout_margin="5dp"
             android:hint="@string/setup_currency_hint"
             android:textColorHint="@color/colorText"
-            app:boxStrokeColor="@color/colorPrimaryMain"
+            app:boxStrokeColor="@color/colorSecondary"
             app:endIconMode="none"
-            app:hintTextColor="@color/colorPrimaryMain">
+            app:hintTextColor="@color/colorSecondary">
 
             <AutoCompleteTextView
                 android:id="@+id/appSetupCurrency"
@@ -71,9 +71,9 @@
             android:layout_margin="5dp"
             android:hint="@string/setup_date_format_hint"
             android:textColorHint="@color/colorText"
-            app:boxStrokeColor="@color/colorPrimaryMain"
+            app:boxStrokeColor="@color/colorSecondary"
             app:endIconMode="none"
-            app:hintTextColor="@color/colorPrimaryMain">
+            app:hintTextColor="@color/colorSecondary">
 
             <AutoCompleteTextView
                 android:id="@+id/appSetupDateFormat"
@@ -99,7 +99,7 @@
         android:layout_marginBottom="12dp"
         android:background="@color/transparent"
         android:text="@string/finish"
-        android:textColor="@color/colorPrimaryMain"
+        android:textColor="@color/colorAccent"
         android:textSize="11sp"
         android:visibility="gone" />
 </RelativeLayout>

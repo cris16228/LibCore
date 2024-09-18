@@ -128,7 +128,7 @@
             android:textColor="@color/colorText"
             android:textStyle="bold"
             android:visibility="gone"
-            app:backgroundTint="@color/colorSecondaryMain" />
+            app:backgroundTint="@color/colorAccent" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/logoutButton"
@@ -138,6 +138,6 @@
             android:text="@string/sign_out"
             android:textColor="@color/colorText"
             android:textStyle="bold"
-            app:backgroundTint="@color/colorSecondaryMain" />
+            app:backgroundTint="@color/colorAccent" />
     </LinearLayout>
 </RelativeLayout>

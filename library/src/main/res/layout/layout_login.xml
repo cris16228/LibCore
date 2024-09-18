@@ -113,7 +113,7 @@
         android:text="@string/login"
         android:textColor="@color/colorText"
         android:textStyle="bold"
-        app:backgroundTint="@color/colorSecondaryMain" />
+        app:backgroundTint="@color/colorAccent" />
 
     <TextView
         android:layout_width="match_parent"
@@ -137,6 +137,6 @@
         android:text="@string/register"
         android:textColor="@color/colorText"
         android:textStyle="bold"
-        app:backgroundTint="@color/colorSecondaryMain" />
+        app:backgroundTint="@color/colorAccent" />
 
 </RelativeLayout>
