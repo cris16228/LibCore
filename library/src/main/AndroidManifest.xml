@@ -4,7 +4,6 @@
     <application
         android:allowBackup="false"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Library"
         android:usesCleartextTraffic="true">
         <receiver
             android:name="com.github.cris16228.libcore.broadcasts.BatteryReceiver"
