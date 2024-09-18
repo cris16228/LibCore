@@ -50,7 +50,7 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
         CountDownLatch latch = new CountDownLatch(1);
         AsyncUtils uploadCrash = AsyncUtils.get();
         try {
-            String result = uploadCrash.execute(new AsyncUtils.onExecuteListener<String>() {
+            uploadCrash.execute(new AsyncUtils.onExecuteListener<String>() {
                 @Override
                 public void preExecute() {
                     StackTraceElement[] arr = e.getStackTrace();
