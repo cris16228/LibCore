@@ -3,6 +3,7 @@ package com.github.cris16228.libcore;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.github.cris16228.libcore.models.UUID;
@@ -24,6 +25,25 @@ public class StringUtils {
         StringUtils StringUtils = new StringUtils();
         StringUtils.context = context;
         return StringUtils;
+    }
+
+    public static String join(@NonNull Object[] objects, @NonNull CharSequence delimiter) {
+        int length = objects.length;
+        if (length == 0) return "";
+        StringBuilder sb = new StringBuilder();
+        sb.append(objects[0]);
+        for (int i = 1; i < length; i++) {
+            sb.append(delimiter);
+            sb.append(objects[i]);
+        }
+        return sb.toString();
+    }
+
+    public static String[] split(@NonNull String text, @NonNull CharSequence delimiter) {
+        if (text.isEmpty()) {
+            return new String[]{};
+        }
+        return text.split(delimiter.toString());
     }
 
     public static String randomUUID(int length) {

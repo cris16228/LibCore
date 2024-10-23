@@ -19,6 +19,7 @@ import androidx.annotation.RawRes;
 import com.github.cris16228.libcore.Base64Utils;
 import com.github.cris16228.libcore.FileUtils;
 import com.github.cris16228.libcore.QueueUtils;
+import com.github.cris16228.libcore.StringUtils;
 import com.github.cris16228.libcore.http.image_loader.interfaces.ConnectionErrors;
 import com.github.cris16228.libcore.http.image_loader.interfaces.LoadImage;
 
@@ -164,12 +165,38 @@ public class ImageLoader {
     }
 
 
-    public void load(Bitmap bitmap, ImageView imageView) {
+    void load(byte[] bytes, ImageView imageView, String path) {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
             imageView.invalidate();
+        }
+        if (!StringUtils.isEmpty(path)) {
+            imageViews.put(imageView, path);
+            queuePhoto(bytes, imageView);
+        }
+    }
+
+    public void load(byte[] bytes, ImageView imageView) {
+        load(bytes, imageView, null);
+    }
+
+    public void load(Bitmap bitmap, ImageView imageView) {
+        load(bitmap, imageView, null);
+    }
+
+    public void load(Bitmap bitmap, ImageView imageView, String path) {
+        imageView.setImageBitmap(null);
+        imageView.setImageDrawable(null);
+        if (bitmap != null) {
+            imageView.setImageBitmap(bitmap);
+            imageView.invalidate();
+            if (!StringUtils.isEmpty(path)) {
+                imageViews.put(imageView, path);
+                queuePhoto(path, imageView);
+            }
         }
     }
 
@@ -193,6 +220,11 @@ public class ImageLoader {
         executor.submit(new PhotoLoader(photoToLoad, loadImage, connectionErrors, downloadProgress));
     }
 
+    public void queuePhoto(byte[] bytes, ImageView imageView) {
+        PhotoToLoad photoToLoad = new PhotoToLoad(bytes, imageView);
+        executor.submit(new PhotoLoader(photoToLoad));
+    }
+
     private void queuePhoto(List<Object> urls, String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors) {
         PhotoToLoad photoToLoad = new PhotoToLoad(url, imageView);
         executor.submit(new PhotoLoader(urls, photoToLoad, loadImage, connectionErrors));
@@ -206,6 +238,11 @@ public class ImageLoader {
     public void queuePhoto(String path, ImageView imageView, LoadImage loadImage, FileType fileType) {
         PhotoToLoad photoToLoad = new PhotoToLoad(path, imageView);
         executor.submit(new PhotoLoader(photoToLoad, loadImage, true, fileType));
+    }
+
+    public void queuePhoto(String path, ImageView imageView) {
+        PhotoToLoad photoToLoad = new PhotoToLoad(path, imageView);
+        executor.submit(new PhotoLoader(photoToLoad));
     }
 
     private void cancelLoadingTask(Uri uri) {
@@ -534,6 +571,10 @@ public class ImageLoader {
             loadImage = _loadImage;
             connectionErrors = _connectionErrors;
             urls = _urls;
+        }
+
+        public PhotoLoader(PhotoToLoad photoToLoad) {
+            this.photoToLoad = photoToLoad;
         }
 
         @Override
