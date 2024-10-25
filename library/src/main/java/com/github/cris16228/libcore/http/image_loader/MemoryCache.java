@@ -2,10 +2,13 @@ package com.github.cris16228.libcore.http.image_loader;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.util.Base64;
 
 import com.github.cris16228.libcore.Base64Utils;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -45,8 +48,17 @@ public class MemoryCache {
         }
     }
 
-    public void put(String id, Bitmap bitmap) {
+    public void put(String id, Bitmap bitmap, boolean isLocal) {
         try {
+            if (isLocal) {
+                File file = new File(context.getCacheDir(), Uri.parse(id).getLastPathSegment() + ".png");
+                System.out.println(file.getPath());
+                if (!file.exists()) {
+                    file.createNewFile();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, Files.newOutputStream(file.toPath()));
+
+                }
+            }
             if (cache.containsKey(id))
                 size -= sizeInBytes(cache.get(id));
             cache.put(id, bitmap);
@@ -55,6 +67,10 @@ public class MemoryCache {
         } catch (Throwable ex) {
             ex.printStackTrace();
         }
+    }
+
+    public void put(String id, Bitmap bitmap) {
+        put(id, bitmap, false);
     }
 
     private void checkSize() {

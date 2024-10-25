@@ -183,20 +183,21 @@ public class ImageLoader {
         load(bytes, imageView, null);
     }
 
-    public void load(Bitmap bitmap, ImageView imageView) {
-        load(bitmap, imageView, null);
-    }
-
     public void load(Bitmap bitmap, ImageView imageView, String path) {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
-        if (bitmap != null) {
+        Bitmap bitmapCache = memoryCache.get(path);
+        if (bitmapCache != null) {
+            imageView.setImageBitmap(bitmapCache);
+            imageView.invalidate();
+        } else {
+            memoryCache.put(path, bitmap, true);
             imageView.setImageBitmap(bitmap);
             imageView.invalidate();
-            if (!StringUtils.isEmpty(path)) {
-                imageViews.put(imageView, path);
-                queuePhoto(path, imageView);
-            }
+        }
+        if (!StringUtils.isEmpty(path)) {
+            imageViews.put(imageView, path);
+            queuePhoto(path, imageView);
         }
     }
 
@@ -589,9 +590,12 @@ public class ImageLoader {
                 memoryCache.put(bytes, bitmap);
             } else {
                 if (local) {
-                    memoryCache.put(photoToLoad.url, bitmap);
+                    memoryCache.put(photoToLoad.url, bitmap, local);
                 } else {
                     bitmap = getBitmap(photoToLoad.url, connectionErrors, downloadProgress);
+                    memoryCache.put(photoToLoad.url, bitmap);
+                }
+                if (bitmap != null) {
                     memoryCache.put(photoToLoad.url, bitmap);
                 }
             }
