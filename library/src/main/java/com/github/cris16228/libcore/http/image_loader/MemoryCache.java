@@ -2,7 +2,6 @@ package com.github.cris16228.libcore.http.image_loader;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.util.Base64;
 
 import com.github.cris16228.libcore.Base64Utils;
@@ -51,7 +50,7 @@ public class MemoryCache {
     public void put(String id, Bitmap bitmap, boolean isLocal) {
         try {
             if (isLocal) {
-                File file = new File(context.getCacheDir(), Uri.parse(id).getLastPathSegment() + ".png");
+                File file = new File(id);
                 System.out.println(file.getPath());
                 if (!file.exists()) {
                     file.createNewFile();
