@@ -2,6 +2,7 @@ package com.github.cris16228.libcore.http.image_loader;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Base64;
 
 import com.github.cris16228.libcore.Base64Utils;
@@ -38,13 +39,21 @@ public class MemoryCache {
 
     public Bitmap get(String id) {
         try {
-            if (!cache.containsKey(id))
-                return null;
-            return cache.get(id);
+            if (cache.containsKey(id))
+                return cache.get(id);
+            File file = new File(id);
+            if (file.exists()) {
+                Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                if (bitmap != null) {
+                    put(id, bitmap, true);
+                    return bitmap;
+                }
+            }
         } catch (NullPointerException ex) {
             ex.printStackTrace();
             return null;
         }
+        return null;
     }
 
     public void put(String id, Bitmap bitmap, boolean isLocal) {
