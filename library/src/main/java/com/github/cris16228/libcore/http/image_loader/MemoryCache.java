@@ -44,9 +44,14 @@ public class MemoryCache {
                 return cache.get(id);
             File file = new File(id);
             if (file.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
-                if (bitmap != null) {
-                    return bitmap;
+                if (file.length() > 0) {
+                    Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                    if (bitmap != null) {
+                        return bitmap;
+                    }
+                } else {
+                    file.delete();
+                    return null;
                 }
             }
         } catch (NullPointerException ex) {

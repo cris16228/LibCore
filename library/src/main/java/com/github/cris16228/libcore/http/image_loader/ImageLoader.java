@@ -580,9 +580,9 @@ public class ImageLoader {
 
         @Override
         public void run() {
-            if (imageViewReused(photoToLoad)) {
+            /*if (imageViewReused(photoToLoad)) {
                 return;
-            }
+            }*/
             if (asBitmap) {
                 bitmap = getBitmap(photoToLoad.bytes);
                 Base64Utils.Base64Encoder encoder = new Base64Utils.Base64Encoder();
@@ -599,8 +599,8 @@ public class ImageLoader {
                     memoryCache.put(photoToLoad.url, bitmap);
                 }
             }
-            if (imageViewReused(photoToLoad))
-                return;
+            /*if (imageViewReused(photoToLoad))
+                return;*/
             Displacer displacer;
             if (urls != null && !urls.isEmpty()) {
                 displacer = new Displacer(urls, bitmap, photoToLoad, loadImage, connectionErrors);
@@ -637,8 +637,8 @@ public class ImageLoader {
         @Override
         public void run() {
             handler.post(() -> {
-                if (imageViewReused(photoToLoad))
-                    return;
+                /*if (imageViewReused(photoToLoad))
+                    return;*/
                 if (bitmap != null) {
                     if (loadImage != null)
                         loadImage.onSuccess(bitmap);
