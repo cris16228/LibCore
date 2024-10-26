@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
+import android.util.Log;
 
 import com.github.cris16228.libcore.Base64Utils;
 
@@ -45,7 +46,6 @@ public class MemoryCache {
             if (file.exists()) {
                 Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
                 if (bitmap != null) {
-                    put(id, bitmap, true);
                     return bitmap;
                 }
             }
@@ -60,11 +60,12 @@ public class MemoryCache {
         try {
             if (isLocal) {
                 File file = new File(id);
-                System.out.println(file.getPath());
-                if (!file.exists()) {
-                    file.createNewFile();
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, Files.newOutputStream(file.toPath()));
-
+                if (bitmap.getByteCount() > 0) {
+                    if (!file.exists()) {
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, Files.newOutputStream(file.toPath()));
+                    }
+                } else {
+                    Log.e("MemoryCache", "Bitmap is null");
                 }
             }
             if (cache.containsKey(id))
