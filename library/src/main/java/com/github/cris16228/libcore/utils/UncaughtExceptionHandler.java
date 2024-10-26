@@ -112,7 +112,7 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
                 @Override
                 public void postDelayed() {
                 }
-            });
+            }, null);
         } catch (InterruptedException ex) {
             throw new RuntimeException(ex);
         }
