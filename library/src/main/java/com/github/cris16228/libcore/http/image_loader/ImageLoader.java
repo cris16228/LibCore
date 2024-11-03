@@ -74,7 +74,7 @@ public class ImageLoader {
         handler = new Handler(Looper.getMainLooper());
         fileUtils = new FileUtils();
         this.context = context;
-        memoryCache = new MemoryCache(context);
+        memoryCache = new MemoryCache(context, path);
     }
 
     public void fileCache(Context _context) {

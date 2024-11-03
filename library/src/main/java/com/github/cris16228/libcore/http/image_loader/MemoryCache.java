@@ -9,6 +9,8 @@ import android.util.Log;
 import com.github.cris16228.libcore.Base64Utils;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,9 +24,11 @@ public class MemoryCache {
     private final Context context;
     private long size = 0;
     private long limit = 1000000;
+    private String path;
 
-    public MemoryCache(Context context) {
+    public MemoryCache(Context context, String path) {
         this.context = context;
+        this.path = path;
         setLimit(Runtime.getRuntime().maxMemory() / 4);
     }
 
@@ -39,6 +43,12 @@ public class MemoryCache {
     }
 
     public Bitmap get(String id) {
+        try {
+            id = URLEncoder.encode(id, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        id = new File(path, id).getAbsolutePath();
         try {
             System.out.println(id + " - " + cache.containsKey(id));
             if (cache.containsKey(id))
