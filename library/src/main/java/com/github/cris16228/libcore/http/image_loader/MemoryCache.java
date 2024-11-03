@@ -50,11 +50,9 @@ public class MemoryCache {
         }
         id = new File(path, id).getAbsolutePath();
         try {
-            System.out.println(id + " - " + cache.containsKey(id));
             if (cache.containsKey(id))
                 return cache.get(id);
             File file = new File(id);
-            System.out.println(id + " - " + file.getAbsolutePath() + " - " + file.exists());
             if (file.exists()) {
                 if (file.length() > 0) {
                     Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
