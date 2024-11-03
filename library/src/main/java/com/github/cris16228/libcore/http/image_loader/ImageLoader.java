@@ -121,6 +121,7 @@ public class ImageLoader {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
         Bitmap bitmap = memoryCache.get(url);
+        Log.w("load", (bitmap == null) ? "Bitmap is null" : "Loading from cache");
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
             imageView.invalidate();
