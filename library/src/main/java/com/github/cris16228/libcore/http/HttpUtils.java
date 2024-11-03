@@ -205,7 +205,7 @@ public class HttpUtils {
             try (InputStream input = new BufferedInputStream(url.openStream(), 8192)) {
                 File tmp = new File(path);
                 String tmpPath = tmp.getParent();
-                if (tmpPath != null && !new File(tmpPath).exists()) tmp.mkdirs();
+                if (tmpPath != null && !new File(tmpPath).exists()) tmp.getParentFile().mkdirs();
 
                 try (OutputStream output = new BufferedOutputStream(Files.newOutputStream(Paths.get(path)))) {
                     byte[] data = new byte[8192]; // Use a larger buffer size for better performance

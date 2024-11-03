@@ -67,6 +67,7 @@ public class MemoryCache {
                 File file = new File(id);
                 if (bitmap.getByteCount() > 0) {
                     if (!file.exists()) {
+                        file.getParentFile().mkdirs();
                         bitmap.compress(Bitmap.CompressFormat.PNG, 100, Files.newOutputStream(file.toPath()));
                     }
                 } else {

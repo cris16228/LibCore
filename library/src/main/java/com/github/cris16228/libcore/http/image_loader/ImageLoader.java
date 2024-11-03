@@ -98,6 +98,25 @@ public class ImageLoader {
         return this;
     }
 
+    /*
+    * public void load(Bitmap bitmap, ImageView imageView, String path) {
+        imageView.setImageBitmap(null);
+        imageView.setImageDrawable(null);
+        Bitmap bitmapCache = memoryCache.get(path);
+        if (bitmapCache != null) {
+            imageView.setImageBitmap(bitmapCache);
+            imageView.invalidate();
+        } else {
+            memoryCache.put(path, bitmap, true);
+            imageView.setImageBitmap(bitmap);
+            imageView.invalidate();
+        }
+        if (!StringUtils.isEmpty(path)) {
+            imageViews.put(imageView, path);
+            queuePhoto(path, imageView);
+        }
+    }*/
+
     public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
