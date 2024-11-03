@@ -13,7 +13,7 @@ public class FileCache {
     public FileCache(Context context) {
         cacheDir = context.getCacheDir();
         if (!cacheDir.exists())
-            cacheDir.mkdirs();
+            cacheDir.getParentFile().mkdirs();
     }
 
     public FileCache(String path) {
