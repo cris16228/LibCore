@@ -11,7 +11,6 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
 import com.github.cris16228.libcore.FloatUtils;
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.math.RoundingMode;
 
@@ -54,10 +53,10 @@ public class DeviceUtils {
         view.clearFocus();
     }
 
-    public void getFocus(TextInputEditText textInputEditText) {
-        textInputEditText.requestFocus();
+    public void getFocus(View view) {
+        view.requestFocus();
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(textInputEditText, InputMethodManager.SHOW_IMPLICIT);
+        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
     }
 
     public void clearFocus(View view) {
