@@ -30,6 +30,7 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
     int viewWidth, viewHeight;
     float saveScale = 1f;
     int oldMeasuredWidth, oldMeasuredHeight;
+    private OnTouchEvent onTouchEvent;
 
     ScaleGestureDetector mScaleDetector;
     Context context;
@@ -42,6 +43,10 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
     public ZoomImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
         sharedConstructing(context);
+    }
+
+    public void setOnTouchEvent(OnTouchEvent onTouchEvent) {
+        this.onTouchEvent = onTouchEvent;
     }
 
     private void stopInterceptEvent() {
@@ -63,6 +68,11 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
         setOnTouchListener((v, event) -> {
             mScaleDetector.onTouchEvent(event);
             PointF curr = new PointF(event.getX(), event.getY());
+
+            if (onTouchEvent != null) {
+                onTouchEvent.onTouchEvent(event);
+            }
+
             switch (event.getAction() & event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                     last.set(curr);
@@ -161,9 +171,6 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
         viewWidth = MeasureSpec.getSize(widthMeasureSpec);
         viewHeight = MeasureSpec.getSize(heightMeasureSpec);
 
-        //
-        // Rescales image on rotation
-        //
         if (oldMeasuredHeight == viewWidth && oldMeasuredHeight == viewHeight
                 || viewWidth == 0 || viewHeight == 0)
             return;
@@ -201,6 +208,10 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
             setImageMatrix(matrix);
         }
         fixTrans();
+    }
+
+    public interface OnTouchEvent {
+        void onTouchEvent(MotionEvent event);
     }
 
     private class ScaleListener extends
