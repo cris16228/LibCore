@@ -69,7 +69,7 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
             mScaleDetector.onTouchEvent(event);
             PointF curr = new PointF(event.getX(), event.getY());
 
-            if (onTouchEvent != null) {
+            if (onTouchEvent != null && saveScale == minScale) {
                 onTouchEvent.onTouchEvent(event);
             }
 
