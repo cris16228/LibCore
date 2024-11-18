@@ -1,14 +1,20 @@
 package com.github.cris16228.libcore.view;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+
+import com.github.cris16228.libcore.R;
 
 public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView {
 
@@ -26,12 +32,13 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
     PointF start = new PointF();
     float minScale = 1f;
     float maxScale = 5f;
+    float maxDifference = 0.15f;
     float[] m;
     int viewWidth, viewHeight;
     float saveScale = 1f;
     int oldMeasuredWidth, oldMeasuredHeight;
     private OnTouchEvent onTouchEvent;
-
+    private GestureDetector gestureDetector;
     ScaleGestureDetector mScaleDetector;
     Context context;
 
@@ -42,6 +49,15 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
 
     public ZoomImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.ZoomImageView);
+        try {
+            minScale = typedArray.getFloat(R.styleable.ZoomImageView_minScale, minScale);
+            maxScale = typedArray.getFloat(R.styleable.ZoomImageView_maxScale, maxScale);
+            maxDifference = typedArray.getFloat(R.styleable.ZoomImageView_maxDifference, maxDifference);
+        } finally {
+            typedArray.recycle();
+            typedArray.close();
+        }
         sharedConstructing(context);
     }
 
@@ -65,12 +81,38 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
         m = new float[9];
         setImageMatrix(matrix);
         setScaleType(ScaleType.MATRIX);
+
+        gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onDoubleTap(@NonNull MotionEvent e) {
+                if (saveScale == minScale) {
+                    saveScale = maxScale;
+                    matrix.setScale(maxScale, maxScale, viewWidth / 2f, viewHeight / 2f);
+                } else {
+                    saveScale = minScale;
+                    matrix.setScale(minScale, minScale, viewWidth / 2f, viewHeight / 2f);
+                }
+                fixTrans();
+                setImageMatrix(matrix);
+                invalidate();
+                return true;
+            }
+        });
+
         setOnTouchListener((v, event) -> {
             mScaleDetector.onTouchEvent(event);
+            gestureDetector.onTouchEvent(event);
             PointF curr = new PointF(event.getX(), event.getY());
 
-            if (onTouchEvent != null && saveScale == minScale) {
-                onTouchEvent.onTouchEvent(event);
+            if (saveScale <= minScale + maxDifference) {
+                saveScale = minScale;
+                matrix.setScale(saveScale, saveScale);
+                fixTrans();
+                setImageMatrix(matrix);
+
+                if (onTouchEvent != null) {
+                    onTouchEvent.onTouchEvent(event);
+                }
             }
 
             switch (event.getAction() & event.getActionMasked()) {
@@ -217,7 +259,7 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
     private class ScaleListener extends
             ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
-        public boolean onScaleBegin(ScaleGestureDetector detector) {
+        public boolean onScaleBegin(@NonNull ScaleGestureDetector detector) {
             mode = ZOOM;
             return true;
         }
@@ -237,8 +279,8 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
 
             if (origWidth * saveScale <= viewWidth
                     || origHeight * saveScale <= viewHeight)
-                matrix.postScale(mScaleFactor, mScaleFactor, viewWidth / 2,
-                        viewHeight / 2);
+                matrix.postScale(mScaleFactor, mScaleFactor, viewWidth / 2f,
+                        viewHeight / 2f);
             else
                 matrix.postScale(mScaleFactor, mScaleFactor,
                         detector.getFocusX(), detector.getFocusY());

@@ -6,13 +6,13 @@
         <attr name="passcodeOverlay" format="color" />
         <attr name="passcodeError" format="color" />
         <attr name="passcodeButtonColor" format="color" />
-        <!--<attr name="firstInputTip" format="string" />
-        <attr name="secondInputTip" format="string" />
-        <attr name="wrongLengthTip" format="string" />
-        <attr name="wrongInputTip" format="string" />
-        <attr name="correctInputTip" format="string" />-->
     </declare-styleable>
 
+    <declare-styleable name="ZoomImageView">
+        <attr name="minScale" format="float" />
+        <attr name="maxScale" format="float" />
+        <attr name="maxDifference" format="float" />
+    </declare-styleable>
 
     <declare-styleable name="RoundCornerImageView">
         <attr name="cornerRadius" format="dimension" />
