@@ -67,7 +67,6 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
             errorColor = typedArray.getColor(R.styleable.Passcode_passcodeError, errorColor);
         } finally {
             typedArray.recycle();
-            typedArray.close();
         }
     }
 
@@ -81,7 +80,6 @@ public class MaterialPasscode extends FrameLayout implements View.OnClickListene
             errorColor = typedArray.getColor(R.styleable.Passcode_passcodeError, errorColor);
         } finally {
             typedArray.recycle();
-            typedArray.close();
         }
         initView(context);
     }

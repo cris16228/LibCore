@@ -56,7 +56,6 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
             maxDifference = typedArray.getFloat(R.styleable.ZoomImageView_maxDifference, maxDifference);
         } finally {
             typedArray.recycle();
-            typedArray.close();
         }
         sharedConstructing(context);
     }
