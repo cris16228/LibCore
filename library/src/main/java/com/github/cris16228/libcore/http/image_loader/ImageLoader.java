@@ -124,6 +124,9 @@ public class ImageLoader {
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
             imageView.invalidate();
+            if (loadImage != null) {
+                loadImage.onSuccess(bitmap);
+            }
         } else {
             imageViews.put(imageView, url);
             queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
@@ -137,6 +140,9 @@ public class ImageLoader {
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
             imageView.invalidate();
+            if (loadImage != null) {
+                loadImage.onSuccess(bitmap);
+            }
         } else {
             imageViews.put(imageView, url);
             queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress, params);
@@ -157,6 +163,9 @@ public class ImageLoader {
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
             imageView.invalidate();
+            if (loadImage != null) {
+                loadImage.onSuccess(bitmap);
+            }
         } else {
             imageViews.put(imageView, offlineUrl);
             queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
@@ -174,6 +183,9 @@ public class ImageLoader {
             imageView.setImageBitmap(bitmap);
             imageView.invalidate();
             load(urls, imageView, loadImage, connectionErrors);
+            if (loadImage != null) {
+                loadImage.onSuccess(bitmap);
+            }
         } else {
             imageViews.put(imageView, url);
             queuePhoto(urls, url, imageView, loadImage, connectionErrors);
@@ -190,6 +202,9 @@ public class ImageLoader {
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
             imageView.invalidate();
+            if (loadImage != null) {
+                loadImage.onSuccess(bitmap);
+            }
         } else {
             imageViews.put(imageView, url);
             queuePhoto(bytes, imageView, loadImage, connectionErrors, downloadProgress);
