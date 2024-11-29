@@ -223,6 +223,39 @@ public class HttpUtils {
         }
     }
 
+    public void downloadFile(String _url, String path, HashMap<String, String> params) {
+        int count;
+        try {
+            URL url = new URL(_url);
+            URLConnection connection = url.openConnection();
+            if (!params.isEmpty()) {
+                for (Map.Entry<String, String> param : params.entrySet()) {
+                    conn.addRequestProperty(param.getKey(), param.getValue());
+                }
+            }
+            connection.connect();
+
+            try (InputStream input = new BufferedInputStream(url.openStream(), 8192)) {
+                File tmp = new File(path);
+                String tmpPath = tmp.getParent();
+                if (tmpPath != null && !new File(tmpPath).exists()) tmp.getParentFile().mkdirs();
+
+                try (OutputStream output = new BufferedOutputStream(Files.newOutputStream(Paths.get(path)))) {
+                    byte[] data = new byte[8192]; // Use a larger buffer size for better performance
+
+                    while ((count = input.read(data)) != -1) {
+                        output.write(data, 0, count);
+                    }
+
+                    // flushing output
+                    output.flush();
+                }
+            }
+        } catch (Exception e) {
+            Log.e("Error: ", e.getMessage());
+        }
+    }
+
     public String post(String _url, HashMap<String, String> params) {
         return post(_url, params, null);
     }

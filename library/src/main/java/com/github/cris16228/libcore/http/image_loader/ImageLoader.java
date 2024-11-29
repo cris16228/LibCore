@@ -121,13 +121,25 @@ public class ImageLoader {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
         Bitmap bitmap = memoryCache.get(url);
-        Log.w("load", (bitmap == null) ? "Bitmap is null" : "Loading from cache");
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
             imageView.invalidate();
         } else {
             imageViews.put(imageView, url);
             queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
+        }
+    }
+
+    public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, HashMap<String, String> params) {
+        imageView.setImageBitmap(null);
+        imageView.setImageDrawable(null);
+        Bitmap bitmap = memoryCache.get(url);
+        if (bitmap != null) {
+            imageView.setImageBitmap(bitmap);
+            imageView.invalidate();
+        } else {
+            imageViews.put(imageView, url);
+            queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress, params);
         }
     }
 
@@ -234,6 +246,11 @@ public class ImageLoader {
     public void queuePhoto(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
         PhotoToLoad photoToLoad = new PhotoToLoad(url, imageView);
         executor.submit(new PhotoLoader(photoToLoad, loadImage, connectionErrors, downloadProgress));
+    }
+
+    private void queuePhoto(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, HashMap<String, String> params) {
+        PhotoToLoad photoToLoad = new PhotoToLoad(url, imageView);
+        executor.submit(new PhotoLoader(photoToLoad, loadImage, connectionErrors, downloadProgress, params));
     }
 
     public void queuePhoto(byte[] bytes, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
@@ -467,7 +484,7 @@ public class ImageLoader {
         return fileUtils.decodeFile(file);
     }
 
-    private Bitmap getBitmap(String url, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
+    private Bitmap getBitmap(String url, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, HashMap<String, String> params) {
         File file = fileCache.getFile(url);
         Bitmap _image = fileUtils.decodeFile(file);
         if (_image != null)
@@ -476,6 +493,11 @@ public class ImageLoader {
             Bitmap _webImage;
             URL imageURL = new URL(url);
             HttpURLConnection connection = (HttpURLConnection) imageURL.openConnection();
+            if (!params.isEmpty()) {
+                for (Map.Entry<String, String> entry : params.entrySet()) {
+                    connection.setRequestProperty(entry.getKey(), entry.getValue());
+                }
+            }
             connection.setConnectTimeout(0);
             connection.setReadTimeout(0);
             connection.setInstanceFollowRedirects(true);
@@ -571,6 +593,7 @@ public class ImageLoader {
         DownloadProgress downloadProgress;
         private Bitmap bitmap;
         private boolean local;
+        private HashMap<String, String> params;
 
 
         PhotoLoader(PhotoToLoad _photoToLoad, LoadImage _loadImage, ConnectionErrors _connectionErrors, DownloadProgress _downloadProgress) {
@@ -578,6 +601,15 @@ public class ImageLoader {
             loadImage = _loadImage;
             connectionErrors = _connectionErrors;
             downloadProgress = _downloadProgress;
+            params = new HashMap<>();
+        }
+
+        PhotoLoader(PhotoToLoad _photoToLoad, LoadImage _loadImage, ConnectionErrors _connectionErrors, DownloadProgress _downloadProgress, HashMap<String, String> params) {
+            photoToLoad = _photoToLoad;
+            loadImage = _loadImage;
+            connectionErrors = _connectionErrors;
+            downloadProgress = _downloadProgress;
+            this.params = params;
         }
 
         PhotoLoader(PhotoToLoad _photoToLoad, LoadImage _loadImage, boolean _local, FileType fileType) {
@@ -585,6 +617,7 @@ public class ImageLoader {
             loadImage = _loadImage;
             local = _local;
             bitmap = getFileThumbnail(Uri.parse(_photoToLoad.url), fileType);
+            params = new HashMap<>();
         }
 
         PhotoLoader(List<Object> _urls, PhotoToLoad _photoToLoad, LoadImage _loadImage, ConnectionErrors _connectionErrors) {
@@ -592,17 +625,16 @@ public class ImageLoader {
             loadImage = _loadImage;
             connectionErrors = _connectionErrors;
             urls = _urls;
+            params = new HashMap<>();
         }
 
         public PhotoLoader(PhotoToLoad photoToLoad) {
             this.photoToLoad = photoToLoad;
+            params = new HashMap<>();
         }
 
         @Override
         public void run() {
-            /*if (imageViewReused(photoToLoad)) {
-                return;
-            }*/
             if (asBitmap) {
                 bitmap = getBitmap(photoToLoad.bytes);
                 Base64Utils.Base64Encoder encoder = new Base64Utils.Base64Encoder();
@@ -612,7 +644,7 @@ public class ImageLoader {
                 if (local) {
                     memoryCache.put(photoToLoad.url, bitmap, local);
                 } else {
-                    bitmap = getBitmap(photoToLoad.url, connectionErrors, downloadProgress);
+                    bitmap = getBitmap(photoToLoad.url, connectionErrors, downloadProgress, params);
                     memoryCache.put(photoToLoad.url, bitmap);
                 }
                 if (bitmap != null) {
