@@ -68,8 +68,8 @@
         <item name="colorSurfaceContainerLow">@color/blue_md_theme_surfaceContainerLow</item>
         <item name="colorSurfaceContainer">@color/blue_md_theme_surfaceContainer</item>
         <item name="colorSurfaceContainerHigh">@color/blue_md_theme_surfaceContainerHigh</item>
-        <item name="colorSurfaceContainerHighest">@color/blue_md_theme_surfaceContainerHighest
-        </item>
+        <item name="colorSurfaceContainerHighest">@color/blue_md_theme_surfaceContainerHighest</item>
+        path
     </style>
 
     <style name="LibCore.BottomNavigationView" parent="Theme.Material3.DayNight.NoActionBar">

@@ -7,6 +7,7 @@ import android.util.Base64;
 import android.util.Log;
 
 import com.github.cris16228.libcore.Base64Utils;
+import com.github.cris16228.libcore.StringUtils;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -43,6 +44,7 @@ public class MemoryCache {
     }
 
     public Bitmap get(String id) {
+        if (StringUtils.isEmpty(path)) return null;
         try {
             id = URLEncoder.encode(id, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -109,6 +111,10 @@ public class MemoryCache {
                     break;
             }
         }
+    }
+
+    public String getPath() {
+        return path;
     }
 
     public void clear() {

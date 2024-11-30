@@ -657,13 +657,19 @@ public class ImageLoader {
                 memoryCache.put(bytes, bitmap);
             } else {
                 if (local) {
-                    memoryCache.put(photoToLoad.url, bitmap, local);
+                    if (!StringUtils.isEmpty(memoryCache.getPath())) {
+                        memoryCache.put(photoToLoad.url, bitmap, local);
+                    }
                 } else {
                     bitmap = getBitmap(photoToLoad.url, connectionErrors, downloadProgress, params);
-                    memoryCache.put(photoToLoad.url, bitmap);
+                    if (!StringUtils.isEmpty(memoryCache.getPath())) {
+                        memoryCache.put(photoToLoad.url, bitmap);
+                    }
                 }
                 if (bitmap != null) {
-                    memoryCache.put(photoToLoad.url, bitmap);
+                    if (!StringUtils.isEmpty(memoryCache.getPath())) {
+                        memoryCache.put(photoToLoad.url, bitmap);
+                    }
                 }
             }
             /*if (imageViewReused(photoToLoad))
