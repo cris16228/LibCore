@@ -57,6 +57,7 @@ public class ImageLoader {
     private Context context;
     private boolean asBitmap = false;
     private Handler handler;
+    private boolean saveInCache;
 
     public static ImageLoader with(Context context, String path) {
         ImageLoader loader = new ImageLoader();
@@ -134,6 +135,40 @@ public class ImageLoader {
     }
 
     public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, HashMap<String, String> params) {
+        imageView.setImageBitmap(null);
+        imageView.setImageDrawable(null);
+        Bitmap bitmap = memoryCache.get(url);
+        if (bitmap != null) {
+            imageView.setImageBitmap(bitmap);
+            imageView.invalidate();
+            if (loadImage != null) {
+                loadImage.onSuccess(bitmap);
+            }
+        } else {
+            imageViews.put(imageView, url);
+            queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress, params);
+        }
+    }
+
+    public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, boolean saveInCache) {
+        this.saveInCache = saveInCache;
+        imageView.setImageBitmap(null);
+        imageView.setImageDrawable(null);
+        Bitmap bitmap = memoryCache.get(url);
+        if (bitmap != null) {
+            imageView.setImageBitmap(bitmap);
+            imageView.invalidate();
+            if (loadImage != null) {
+                loadImage.onSuccess(bitmap);
+            }
+        } else {
+            imageViews.put(imageView, url);
+            queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
+        }
+    }
+
+    public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, HashMap<String, String> params, boolean saveInCache) {
+        this.saveInCache = saveInCache;
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
         Bitmap bitmap = memoryCache.get(url);
@@ -657,19 +692,16 @@ public class ImageLoader {
                 memoryCache.put(bytes, bitmap);
             } else {
                 if (local) {
-                    if (!StringUtils.isEmpty(memoryCache.getPath())) {
+                    if (saveInCache)
                         memoryCache.put(photoToLoad.url, bitmap, local);
-                    }
                 } else {
                     bitmap = getBitmap(photoToLoad.url, connectionErrors, downloadProgress, params);
-                    if (!StringUtils.isEmpty(memoryCache.getPath())) {
+                    if (saveInCache)
                         memoryCache.put(photoToLoad.url, bitmap);
-                    }
                 }
                 if (bitmap != null) {
-                    if (!StringUtils.isEmpty(memoryCache.getPath())) {
+                    if (saveInCache)
                         memoryCache.put(photoToLoad.url, bitmap);
-                    }
                 }
             }
             /*if (imageViewReused(photoToLoad))
