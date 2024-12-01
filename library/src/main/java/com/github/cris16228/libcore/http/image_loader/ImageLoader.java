@@ -265,7 +265,7 @@ public class ImageLoader {
         load(bytes, imageView, null);
     }
 
-    public void load(Bitmap bitmap, ImageView imageView, String path) {
+    public void load(Bitmap bitmap, ImageView imageView, String path, boolean saveInCache) {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
         Bitmap bitmapCache = memoryCache.get(path);
@@ -273,7 +273,7 @@ public class ImageLoader {
             imageView.setImageBitmap(bitmapCache);
             imageView.invalidate();
         } else {
-            memoryCache.put(path, bitmap, true);
+            memoryCache.put(path, bitmap, saveInCache);
             imageView.setImageBitmap(bitmap);
             imageView.invalidate();
         }
@@ -281,6 +281,10 @@ public class ImageLoader {
             imageViews.put(imageView, path);
             queuePhoto(path, imageView);
         }
+    }
+
+    public void load(Bitmap bitmap, ImageView imageView, String path) {
+        load(bitmap, imageView, path, false);
     }
 
     public void load(@RawRes @DrawableRes @NonNull Integer resourceId, ImageView imageView) {
