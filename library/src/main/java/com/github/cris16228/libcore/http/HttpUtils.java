@@ -461,14 +461,15 @@ public class HttpUtils {
                         bytesAvailable = fis.available();
                         bufferSize = Math.min(bytesAvailable, maxBuffer);
                         bytesRead = fis.read(buffer, 0, bufferSize);
-
                     }
 
                     dos.writeBytes(lineEnd);
-                    dos.writeBytes(twoHyphens + boundary + lineEnd);
                     fis.close();
                 }
             }
+            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+            dos.flush();
+            dos.close();
             if (params != null && files != null) {
                 for (String key : params.keySet()) {
                     dos.writeBytes(twoHyphens + boundary + lineEnd);
