@@ -265,26 +265,29 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             float mScaleFactor = detector.getScaleFactor();
-            float origScale = currentScale;
-            currentScale *= mScaleFactor;
-            if (currentScale > maxScale) {
-                currentScale = maxScale;
-                mScaleFactor = maxScale / origScale;
-            } else if (currentScale < minScale) {
-                currentScale = minScale;
-                mScaleFactor = minScale / origScale;
+            if (!Float.isNaN(mScaleFactor) && mScaleFactor > 0) {
+                float origScale = currentScale;
+                currentScale *= mScaleFactor;
+                if (currentScale > maxScale) {
+                    currentScale = maxScale;
+                    mScaleFactor = maxScale / origScale;
+                } else if (currentScale < minScale) {
+                    currentScale = minScale;
+                    mScaleFactor = minScale / origScale;
+                }
+
+                if (origWidth * currentScale <= viewWidth
+                        || origHeight * currentScale <= viewHeight)
+                    matrix.postScale(mScaleFactor, mScaleFactor, viewWidth / 2f,
+                            viewHeight / 2f);
+                else
+                    matrix.postScale(mScaleFactor, mScaleFactor,
+                            detector.getFocusX(), detector.getFocusY());
+
+                fixTrans();
+                return true;
             }
-
-            if (origWidth * currentScale <= viewWidth
-                    || origHeight * currentScale <= viewHeight)
-                matrix.postScale(mScaleFactor, mScaleFactor, viewWidth / 2f,
-                        viewHeight / 2f);
-            else
-                matrix.postScale(mScaleFactor, mScaleFactor,
-                        detector.getFocusX(), detector.getFocusY());
-
-            fixTrans();
-            return true;
+            return false;
         }
     }
 }

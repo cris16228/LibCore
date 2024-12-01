@@ -73,7 +73,7 @@ public class MemoryCache {
         return null;
     }
 
-    public void put(String id, Bitmap bitmap, boolean isLocal) {
+    public void put(String id, Bitmap bitmap, boolean isLocal, boolean saveInCache) {
         try {
             if (isLocal) {
                 File file = new File(id);
@@ -97,7 +97,11 @@ public class MemoryCache {
     }
 
     public void put(String id, Bitmap bitmap) {
-        put(id, bitmap, false);
+        put(id, bitmap, false, true);
+    }
+
+    public void put(String id, Bitmap bitmap, boolean saveInCache) {
+        put(id, bitmap, false, saveInCache);
     }
 
     private void checkSize() {

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.media.ExifInterface;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Handler;
@@ -694,15 +693,15 @@ public class ImageLoader {
             } else {
                 if (local) {
                     if (saveInCache)
-                        memoryCache.put(photoToLoad.url, bitmap, local);
+                        memoryCache.put(photoToLoad.url, bitmap, local, saveInCache);
                 } else {
                     bitmap = getBitmap(photoToLoad.url, connectionErrors, downloadProgress, params);
                     if (saveInCache)
-                        memoryCache.put(photoToLoad.url, bitmap);
+                        memoryCache.put(photoToLoad.url, bitmap, saveInCache);
                 }
                 if (bitmap != null) {
                     if (saveInCache)
-                        memoryCache.put(photoToLoad.url, bitmap);
+                        memoryCache.put(photoToLoad.url, bitmap, saveInCache);
                 }
             }
             /*if (imageViewReused(photoToLoad))
@@ -747,30 +746,6 @@ public class ImageLoader {
                     return;*/
                 if (bitmap != null) {
                     if (photoToLoad.imageView != null) {
-                        try {
-                            File file = fileCache.getFile(photoToLoad.url);
-                            System.out.println(file.getPath());
-                            ExifInterface exif = new ExifInterface(file.getAbsolutePath());
-                            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-                            Matrix matrix = new Matrix();
-                            switch (orientation) {
-                                case ExifInterface.ORIENTATION_ROTATE_90:
-                                    matrix.postRotate(90);
-                                    break;
-                                case ExifInterface.ORIENTATION_ROTATE_180:
-                                    matrix.postRotate(180);
-                                    break;
-                                case ExifInterface.ORIENTATION_ROTATE_270:
-                                    matrix.postRotate(270);
-                                    break;
-                            }
-                            Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                            photoToLoad.imageView.setImageBitmap(rotatedBitmap);
-                            photoToLoad.imageView.invalidate();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
                         if (urls != null && !urls.isEmpty()) {
                             load(urls, photoToLoad.imageView, loadImage, connectionErrors);
                         }
