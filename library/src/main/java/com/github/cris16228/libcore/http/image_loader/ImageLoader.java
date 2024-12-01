@@ -749,6 +749,7 @@ public class ImageLoader {
                     if (photoToLoad.imageView != null) {
                         try {
                             File file = fileCache.getFile(photoToLoad.url);
+                            System.out.println(file.getPath());
                             ExifInterface exif = new ExifInterface(file.getAbsolutePath());
                             int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
                             Matrix matrix = new Matrix();

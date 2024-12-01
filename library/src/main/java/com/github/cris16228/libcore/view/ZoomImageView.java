@@ -35,7 +35,7 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
     int viewWidth, viewHeight;
     float currentScale = 1f;
     int oldMeasuredWidth, oldMeasuredHeight;
-    private com.github.cris16228.libcore.view.ZoomImageView.OnTouchEvent onTouchEvent;
+    private OnTouchEvent onTouchEvent;
     private GestureDetector gestureDetector;
     ScaleGestureDetector mScaleDetector;
     Context context;
