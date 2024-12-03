@@ -1,5 +1,7 @@
 package com.github.cris16228.libcore.http;
 
+import static java.net.HttpURLConnection.HTTP_OK;
+
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
@@ -25,7 +27,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -48,6 +49,7 @@ public class HttpUtils {
     String TAG = getClass().getSimpleName();
     private StringBuilder result;
     private int readTimeout = 10000;
+    BufferedReader reader;
     private int connectionTimeout = 15000;
     private HttpURLConnection conn;
     private DataOutputStream dos;
@@ -422,110 +424,72 @@ public class HttpUtils {
             if (!StringUtils.isEmpty(bearer)) {
                 conn.addRequestProperty("Authorization", "Bearer " + bearer);
             }
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(50000);
-            if (files != null) {
-                conn.setRequestProperty("ENCTYPE", "multipart/form-data");
-                conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-                for (String key : files.keySet()) {
-                    conn.setRequestProperty(key, files.get(key));
-                }
-            }
-            conn.connect();
             dos = new DataOutputStream(conn.getOutputStream());
-
             if (files != null) {
-                for (String key : files.keySet()) {
-                    int bytesRead, bytesAvailable, bufferSize;
-                    byte[] buffer;
-                    int maxBuffer = 1024 * 1024;
-
-                    File selectedFile = new File(files.get(key));
-                    if (!selectedFile.isFile()) {
-                        break;
-                    }
-
-                    dos.writeBytes(twoHyphens + boundary + lineEnd);
-                    dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\";filename=\"" + files.get(key) + "\"" + lineEnd);
-                    dos.writeBytes(lineEnd);
-
-                    FileInputStream fis = new FileInputStream(selectedFile);
-                    bytesAvailable = fis.available();
-                    bufferSize = Math.min(bytesAvailable, maxBuffer);
-                    buffer = new byte[bufferSize];
-
-                    bytesRead = fis.read(buffer, 0, bufferSize);
-
-                    while (bytesRead > 0) {
-                        dos.write(buffer, 0, bufferSize);
-                        bytesAvailable = fis.available();
-                        bufferSize = Math.min(bytesAvailable, maxBuffer);
-                        bytesRead = fis.read(buffer, 0, bufferSize);
-                    }
-
-                    dos.writeBytes(lineEnd);
-                    fis.close();
-                }
+                writeFiles(dos, files);
+            }
+            if (params != null) {
+                writeParams(dos, params);
             }
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-            dos.flush();
-            dos.close();
-            if (params != null && files != null) {
-                for (String key : params.keySet()) {
-                    dos.writeBytes(twoHyphens + boundary + lineEnd);
-                    dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"" + lineEnd);
-                    dos.writeBytes(lineEnd);
-                    dos.writeBytes(params.get(key));
-                    dos.writeBytes(lineEnd);
-                    dos.writeBytes(twoHyphens + boundary + lineEnd);
-                }
-            } else if (params != null) {
-                StringBuilder sb = new StringBuilder();
-                boolean flag = false;
-                for (String key : params.keySet()) {
-                    try {
-                        if (flag) {
-                            sb.append("&");
-                        }
-                        sb.append(key).append("=").append(URLEncoder.encode(params.get(key), "UTF-8"));
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-                    flag = true;
-                    dos.writeBytes(sb.toString());
-                }
-                if (debug)
-                    System.out.println(sb);
-                Log.d(TAG, "RC: " + conn.getResponseCode() + " RM: " + conn.getResponseMessage());
-                dos.flush();
-                dos.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(conn.getInputStream())));
+            int responseCode = conn.getResponseCode();
+            if (responseCode != HTTP_OK) {
+                throw new IOException("HTTP error code: " + responseCode);
+            }
+            reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
                 result.append(line);
             }
-        } catch (IOException e) {
+            return new JSONObject(result.toString());
+        } catch (Exception e) {
             e.printStackTrace();
+            return null;
+        } finally {
+            try {
+                if (dos != null) dos.close();
+                if (reader != null) reader.close();
+                if (conn != null) conn.disconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        conn.disconnect();
+    }
 
-        try {
-            jsonObject = new JSONObject(result.toString());
-        } catch (JSONException e) {
-            Log.e(TAG, "Error parsing data " + e);
+    private void writeParams(DataOutputStream dos, HashMap<String, String> params) throws IOException {
+        for (String key : params.keySet()) {
+            File file = new File(params.get(key));
+            if (!file.isFile()) {
+                continue;
+            }
+            dos.writeBytes(twoHyphens + boundary + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
+            dos.writeBytes(lineEnd);
+
+            FileInputStream fis = new FileInputStream(file);
+            byte[] buffer = new byte[1024 * 1024];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                dos.write(buffer, 0, bytesRead);
+            }
+            fis.close();
+            dos.writeBytes(lineEnd);
         }
+    }
 
-        return jsonObject;
+    private void writeFiles(DataOutputStream dos, HashMap<String, String> files) throws IOException {
+        for (String key : files.keySet()) {
+            dos.writeBytes(twoHyphens + boundary + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"" + lineEnd);
+            dos.writeBytes(lineEnd);
+            dos.writeBytes(files.get(key));
+            dos.writeBytes(lineEnd);
+        }
     }
 
     public int getReadTimeout() {
-        return readTimeout;
+        return 0;
     }
 
     public HttpUtils setReadTimeout(int readTimeout) {
