@@ -421,7 +421,8 @@ public class HttpUtils {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("Accept-Charset", "UTF-8");
-            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary + System.currentTimeMillis() + boundary);
+            boundary = "*****" + System.currentTimeMillis() + "*****";
+            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
             if (!StringUtils.isEmpty(bearer)) {
                 System.out.println("Authorization: Bearer " + bearer);
                 conn.addRequestProperty("Authorization", "Bearer " + bearer);
@@ -442,7 +443,8 @@ public class HttpUtils {
                 while ((line = errorReader.readLine()) != null) {
                     result.append(line);
                 }
-                return new JSONObject((result.toString()));
+                Log.e("Error Response", result.toString());
+                return new JSONObject(result.toString());
             }
             reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String line;
