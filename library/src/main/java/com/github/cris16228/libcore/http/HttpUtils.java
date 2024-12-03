@@ -434,13 +434,14 @@ public class HttpUtils {
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
             int responseCode = conn.getResponseCode();
-            if (responseCode != HTTP_OK) {
-                throw new IOException("HTTP error code: " + responseCode);
-            }
             reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
                 result.append(line);
+            }
+            if (responseCode != HTTP_OK) {
+                Log.e(TAG, "HTTP error code: " + responseCode);
+                return new JSONObject(result.toString());
             }
             return new JSONObject(result.toString());
         } catch (Exception e) {
