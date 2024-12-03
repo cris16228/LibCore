@@ -421,7 +421,9 @@ public class HttpUtils {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("Accept-Charset", "UTF-8");
+            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary + System.currentTimeMillis() + boundary);
             if (!StringUtils.isEmpty(bearer)) {
+                System.out.println("Authorization: Bearer " + bearer);
                 conn.addRequestProperty("Authorization", "Bearer " + bearer);
             }
             dos = new DataOutputStream(conn.getOutputStream());
@@ -434,14 +436,18 @@ public class HttpUtils {
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
             int responseCode = conn.getResponseCode();
+            if (responseCode != HTTP_OK) {
+                BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                String line;
+                while ((line = errorReader.readLine()) != null) {
+                    result.append(line);
+                }
+                return new JSONObject((result.toString()));
+            }
             reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
                 result.append(line);
-            }
-            if (responseCode != HTTP_OK) {
-                Log.e(TAG, "HTTP error code: " + responseCode);
-                return new JSONObject(result.toString());
             }
             return new JSONObject(result.toString());
         } catch (Exception e) {
