@@ -487,13 +487,35 @@ public class HttpUtils {
         }
     }
 
-    private void writeFiles(DataOutputStream dos, HashMap<String, String> files) throws IOException {
+    /*private void writeFiles(DataOutputStream dos, HashMap<String, String> files) throws IOException {
         for (String key : files.keySet()) {
             dos.writeBytes(twoHyphens + boundary + lineEnd);
             dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"" + lineEnd);
             dos.writeBytes(lineEnd);
             dos.writeBytes(files.get(key));
             dos.writeBytes(lineEnd);
+        }
+    }*/
+
+    private void writeFiles(DataOutputStream dos, HashMap<String, String> files) throws IOException {
+        for (Map.Entry<String, String> entry : files.entrySet()) {
+            String key = entry.getKey(); // Should match "file"
+            String filePath = entry.getValue();
+            File file = new File(filePath);
+            FileInputStream fileInputStream = new FileInputStream(file);
+
+            dos.writeBytes("--" + boundary + "\r\n");
+            dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"\r\n");
+            dos.writeBytes("Content-Type: " + URLConnection.guessContentTypeFromName(file.getName()) + "\r\n");
+            dos.writeBytes("\r\n");
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                dos.write(buffer, 0, bytesRead);
+            }
+            fileInputStream.close();
+            dos.writeBytes("\r\n");
         }
     }
 

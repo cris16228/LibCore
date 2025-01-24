@@ -6,12 +6,12 @@
       <GradleProjectSettings>
         <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
+        <option name="gradleJvm" value="jbr-17" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/library" />
+            <option value="/run/media/cris16228/LinuxData/Android/Projects/LibCore" />
+            <option value="/run/media/cris16228/LinuxData/Android/Projects/LibCore/app" />
+            <option value="/run/media/cris16228/LinuxData/Android/Projects/LibCore/library" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />
