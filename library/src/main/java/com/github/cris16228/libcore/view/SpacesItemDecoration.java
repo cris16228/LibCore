@@ -23,8 +23,8 @@ public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
         int position = parent.getChildAdapterPosition(view);
         int column = position % spanCount;
 
-        outRect.left = space;
-        outRect.right = column == spanCount - 1 ? 0 : space;
+        outRect.left = column == 0 ? space : space / 2;
+        outRect.right = column == spanCount - 1 ? 0 : space / 2;
         outRect.bottom = space;
 
         if (position < spanCount)
