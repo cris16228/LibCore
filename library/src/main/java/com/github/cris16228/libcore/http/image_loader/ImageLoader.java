@@ -23,6 +23,8 @@ import com.github.cris16228.libcore.StringUtils;
 import com.github.cris16228.libcore.http.image_loader.interfaces.ConnectionErrors;
 import com.github.cris16228.libcore.http.image_loader.interfaces.LoadImage;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -552,12 +554,12 @@ public class ImageLoader {
                     connection.setRequestProperty(entry.getKey(), entry.getValue());
                 }
             }
-            connection.setConnectTimeout(0);
-            connection.setReadTimeout(0);
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
             connection.setInstanceFollowRedirects(true);
             connection.setRequestProperty("Accept-Encoding", "identity");
-            InputStream is = connection.getInputStream();
-            OutputStream os = new FileOutputStream(file);
+            InputStream is = new BufferedInputStream(connection.getInputStream());
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
             if (downloadProgress != null) {
                 fileUtils.copyStream(is, os, connection.getContentLength(), downloadProgress);
             } else {
@@ -647,7 +649,7 @@ public class ImageLoader {
         DownloadProgress downloadProgress;
         private Bitmap bitmap;
         private boolean local;
-        private HashMap<String, String> params;
+        private final HashMap<String, String> params;
 
 
         PhotoLoader(PhotoToLoad _photoToLoad, LoadImage _loadImage, ConnectionErrors _connectionErrors, DownloadProgress _downloadProgress) {

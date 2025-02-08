@@ -94,7 +94,7 @@ public class FileUtils {
 
     public void copyStream(InputStream is, OutputStream os, int contentLength, ImageLoader.DownloadProgress downloadProgress) {
         try {
-            byte[] data = new byte[8388608];
+            byte[] data = new byte[33554432];
             int count;
             long progress = 0;
             while ((count = is.read(data, 0, data.length)) != -1) {
