@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 
 public class AsyncUtils {
 
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+    ExecutorService executor = Executors.newFixedThreadPool(8);
     Handler handler = new Handler(Looper.getMainLooper());
 
     private onExecuteListener onExecuteListener;
