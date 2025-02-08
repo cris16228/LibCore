@@ -86,6 +86,7 @@ public class FileUtils {
             }
             BitmapFactory.Options _options = new BitmapFactory.Options();
             _options.inSampleSize = scale;
+            System.out.println("Scale: " + scale);
             return BitmapFactory.decodeStream(new FileInputStream(file), null, _options);
         } catch (FileNotFoundException exception) {
             return null;
