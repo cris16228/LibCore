@@ -480,22 +480,27 @@ public class HttpUtils {
 
     private void writeParams(DataOutputStream dos, HashMap<String, String> params) throws IOException {
         for (Map.Entry<String, String> entry : params.entrySet()) {
-            File file = new File(params.get(entry.getKey()));
-            if (!file.isFile()) {
-                continue;
-            }
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"" + entry.getKey() + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
-            dos.writeBytes(lineEnd);
+            String key = entry.getKey();
+            String value = entry.getValue();
+            File file = new File(value);
+            if (file.isFile()) {
+                dos.writeBytes(twoHyphens + boundary + lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
+                dos.writeBytes(lineEnd);
 
-            FileInputStream fis = new FileInputStream(file);
-            byte[] buffer = new byte[1024 * 1024];
-            int bytesRead;
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                dos.write(buffer, 0, bytesRead);
+                FileInputStream fis = new FileInputStream(file);
+                byte[] buffer = new byte[1024 * 1024];
+                int bytesRead;
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    dos.write(buffer, 0, bytesRead);
+                }
+                fis.close();
+                dos.writeBytes(lineEnd);
+            } else {
+                dos.writeBytes(twoHyphens + boundary + lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"" + lineEnd);
+                dos.writeBytes(value + lineEnd);
             }
-            fis.close();
-            dos.writeBytes(lineEnd);
         }
     }
 
@@ -509,7 +514,8 @@ public class HttpUtils {
         }
     }*/
 
-    private void writeFiles(DataOutputStream dos, HashMap<String, String[]> files) throws IOException {
+    private void writeFiles(DataOutputStream dos, HashMap<String, String[]> files) throws
+            IOException {
         for (String key : files.keySet()) {
             String[] filePaths = files.get(key);
             if (filePaths != null) {
