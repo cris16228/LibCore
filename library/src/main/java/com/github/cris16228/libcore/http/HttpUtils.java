@@ -189,11 +189,23 @@ public class HttpUtils {
         return fileParams;
     }
 
+    public HashMap<String, String[]> defaultFilesParams(String[] path) {
+        HashMap<String, String[]> fileParams = new HashMap<>();
+        fileParams.put("files", path);
+        return fileParams;
+    }
+
     public HashMap<String, String> setFileParams(@NonNull String[] paths) {
         HashMap<String, String> fileParams = new HashMap<>();
         for (String path : paths) {
             fileParams.put("file", path);
         }
+        return fileParams;
+    }
+
+    public HashMap<String, String[]> setFilesParams(@NonNull String[] paths) {
+        HashMap<String, String[]> fileParams = new HashMap<>();
+        fileParams.put("files", paths);
         return fileParams;
     }
 
@@ -405,11 +417,11 @@ public class HttpUtils {
         return reader;
     }
 
-    public JSONObject uploadFile(String _url, HashMap<String, String> params, HashMap<String, String> files) {
-        return uploadFile(_url, params, files, "");
+    public JSONObject uploadFile(String _url, HashMap<String, String> params, HashMap<String, String[]> files) {
+        return uploadFiles(_url, params, files, "");
     }
 
-    public JSONObject uploadFile(String _url, HashMap<String, String> params, HashMap<String, String> files, String bearer) {
+    public JSONObject uploadFiles(String _url, HashMap<String, String> params, HashMap<String, String[]> files, String bearer) {
         if (TextUtils.isEmpty(_url))
             url = _url;
         result = new StringBuilder();
@@ -467,13 +479,13 @@ public class HttpUtils {
     }
 
     private void writeParams(DataOutputStream dos, HashMap<String, String> params) throws IOException {
-        for (String key : params.keySet()) {
-            File file = new File(params.get(key));
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            File file = new File(params.get(entry.getKey()));
             if (!file.isFile()) {
                 continue;
             }
             dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=\"" + entry.getKey() + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
             dos.writeBytes(lineEnd);
 
             FileInputStream fis = new FileInputStream(file);
@@ -497,25 +509,28 @@ public class HttpUtils {
         }
     }*/
 
-    private void writeFiles(DataOutputStream dos, HashMap<String, String> files) throws IOException {
-        for (Map.Entry<String, String> entry : files.entrySet()) {
-            String key = entry.getKey(); // Should match "file"
-            String filePath = entry.getValue();
-            File file = new File(filePath);
-            FileInputStream fileInputStream = new FileInputStream(file);
+    private void writeFiles(DataOutputStream dos, HashMap<String, String[]> files) throws IOException {
+        for (String key : files.keySet()) {
+            String[] filePaths = files.get(key);
+            if (filePaths != null) {
+                for (String filePath : filePaths) {
+                    File file = new File(filePath);
+                    FileInputStream fileInputStream = new FileInputStream(file);
 
-            dos.writeBytes("--" + boundary + "\r\n");
-            dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"\r\n");
-            dos.writeBytes("Content-Type: " + URLConnection.guessContentTypeFromName(file.getName()) + "\r\n");
-            dos.writeBytes("\r\n");
+                    dos.writeBytes(twoHyphens + boundary + lineEnd);
+                    dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
+                    dos.writeBytes("Content-Type: " + URLConnection.guessContentTypeFromName(file.getName()) + lineEnd);
+                    dos.writeBytes(lineEnd);
 
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                dos.write(buffer, 0, bytesRead);
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                        dos.write(buffer, 0, bytesRead);
+                    }
+                    dos.writeBytes(lineEnd);
+                    fileInputStream.close();
+                }
             }
-            fileInputStream.close();
-            dos.writeBytes("\r\n");
         }
     }
 
