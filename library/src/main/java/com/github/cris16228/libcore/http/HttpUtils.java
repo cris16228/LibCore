@@ -482,10 +482,10 @@ public class HttpUtils {
         for (Map.Entry<String, String> entry : params.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
-            File file = new File(value);
-            if (file.isFile()) {
-                dos.writeBytes(twoHyphens + boundary + lineEnd);
+            if (new File(value).isFile()) {
+                File file = new File(value);
                 dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
+                dos.writeBytes("Content-Type: " + URLConnection.guessContentTypeFromName(file.getName()) + lineEnd);
                 dos.writeBytes(lineEnd);
 
                 FileInputStream fis = new FileInputStream(file);
@@ -495,13 +495,15 @@ public class HttpUtils {
                     dos.write(buffer, 0, bytesRead);
                 }
                 fis.close();
-                dos.writeBytes(lineEnd);
             } else {
-                dos.writeBytes(twoHyphens + boundary + lineEnd);
                 dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"" + lineEnd);
+                dos.writeBytes(lineEnd);
                 dos.writeBytes(value + lineEnd);
             }
+            dos.writeBytes(lineEnd);
         }
+
+        dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
     }
 
     /*private void writeFiles(DataOutputStream dos, HashMap<String, String> files) throws IOException {
