@@ -98,9 +98,9 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
                                 params.put("app", app.getPackageName());
                                 params.put("action", "crash");
                                 if (!StringUtils.isEmpty(bearer)) {
-                                    String result = String.valueOf(httpUtils.uploadFile(url, params, httpUtils.defaultFileParams(crashFile.getAbsolutePath()), bearer));
+                                    String result = String.valueOf(httpUtils.uploadFiles(url, params, httpUtils.defaultFilesParams(new String[]{crashFile.getAbsolutePath()}), bearer));
                                 } else {
-                                    String result = String.valueOf(httpUtils.uploadFile(url, params, httpUtils.defaultFileParams(crashFile.getAbsolutePath())));
+                                    String result = String.valueOf(httpUtils.uploadFile(url, params, httpUtils.defaultFilesParams(new String[]{crashFile.getAbsolutePath()})));
                                 }
                                 latch.countDown();
                             }
