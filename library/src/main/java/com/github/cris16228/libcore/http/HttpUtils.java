@@ -417,11 +417,11 @@ public class HttpUtils {
         return reader;
     }
 
-    public JSONObject uploadFile(String _url, HashMap<String, String> params, HashMap<String, String[]> files) {
+    public JSONObject uploadFile(String _url, HashMap<String, String[]> params, HashMap<String, String[]> files) {
         return uploadFiles(_url, params, files, "");
     }
 
-    public JSONObject uploadFiles(String _url, HashMap<String, String> params, HashMap<String, String[]> files, String bearer) {
+    public JSONObject uploadFiles(String _url, HashMap<String, String[]> params, HashMap<String, String[]> files, String bearer) {
         if (TextUtils.isEmpty(_url))
             url = _url;
         result = new StringBuilder();
@@ -477,32 +477,36 @@ public class HttpUtils {
         }
     }
 
-    private void writeParams(DataOutputStream dos, HashMap<String, String> params) throws IOException {
-        for (Map.Entry<String, String> entry : params.entrySet()) {
+    private void writeParams(DataOutputStream dos, HashMap<String, String[]> params) throws IOException {
+        for (Map.Entry<String, String[]> entry : params.entrySet()) {
             String key = entry.getKey();
-            String value = entry.getValue();
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
+            String[] values = entry.getValue();
 
-            if (new File(value).isFile()) {
-                File file = new File(value);
-                dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
-                dos.writeBytes("Content-Type: " + URLConnection.guessContentTypeFromName(file.getName()) + lineEnd);
-                dos.writeBytes(lineEnd);
+            for (int i = 0; i < values.length; i++) {
+                String value = values[i];
+                dos.writeBytes(twoHyphens + boundary + lineEnd);
 
-                FileInputStream fis = new FileInputStream(file);
-                byte[] buffer = new byte[1024 * 1024];
-                int bytesRead;
-                while ((bytesRead = fis.read(buffer)) != -1) {
-                    dos.write(buffer, 0, bytesRead);
+                if (new File(value).isFile()) {
+                    File file = new File(value);
+                    dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "[" + i + "]\"; filename=\"" + file.getName() + "\"" + lineEnd);
+                    dos.writeBytes("Content-Type: " + URLConnection.guessContentTypeFromName(file.getName()) + lineEnd);
+                    dos.writeBytes(lineEnd);
+
+                    FileInputStream fis = new FileInputStream(file);
+                    byte[] buffer = new byte[1024 * 1024];
+                    int bytesRead;
+                    while ((bytesRead = fis.read(buffer)) != -1) {
+                        dos.write(buffer, 0, bytesRead);
+                    }
+                    fis.close();
+                } else {
+                    dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"" + lineEnd);
+                    dos.writeBytes("Content-Type: text/plain; charset=UTF-8" + lineEnd);
+                    dos.writeBytes(lineEnd);
+                    dos.writeBytes(value + lineEnd);
                 }
-                fis.close();
-            } else {
-                dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"" + lineEnd);
-                dos.writeBytes("Content-Type: text/plain; charset=UTF-8" + lineEnd);
                 dos.writeBytes(lineEnd);
-                dos.writeBytes(value + lineEnd);
             }
-            dos.writeBytes(lineEnd);
         }
     }
 
