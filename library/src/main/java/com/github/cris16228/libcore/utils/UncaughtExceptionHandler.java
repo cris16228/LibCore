@@ -94,7 +94,7 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
                             if (NetworkUtils.with(app).isConnectedTo(app)) {
                                 File crashFile = FileUtils.with(app).getNewestFile(crashPath);
                                 HttpUtils httpUtils = HttpUtils.get();
-                                HashMap<String, String[]> params = new HashMap<>();
+                                HashMap<String, Object> params = new HashMap<>();
                                 params.put("app", new String[]{app.getPackageName()});
                                 params.put("action", new String[]{"crash"});
                                 if (!StringUtils.isEmpty(bearer)) {
