@@ -440,7 +440,7 @@ public class HttpUtils {
             }
             dos = new DataOutputStream(conn.getOutputStream());
 
-            long totalBytes = calculateBytes(params, files);
+            long totalBytes = calculateBytes(files);
             long uploadedBytes = 0;
 
             for (String key : files.keySet()) {
@@ -461,6 +461,7 @@ public class HttpUtils {
                         long fileUploaded = 0;
                         while ((bytesRead = fileInputStream.read(buffer)) != -1) {
                             dos.write(buffer, 0, bytesRead);
+                            dos.flush();
                             uploadedBytes += bytesRead;
                             fileUploaded += bytesRead;
                             if (isSingleFileProgress) {
@@ -510,7 +511,7 @@ public class HttpUtils {
         }
     }
 
-    private long calculateBytes(HashMap<String, Object> params, HashMap<String, String[]> files) {
+    private long calculateBytes(HashMap<String, String[]> files) {
         long total = 0;
         if (files != null) {
             for (String key : files.keySet()) {
