@@ -421,8 +421,112 @@ public class HttpUtils {
         return uploadFiles(_url, params, files, "");
     }
 
+    public JSONObject uploadFiles(String _url, HashMap<String, Object> params, HashMap<String, String[]> files, String bearer, boolean isSingleFileProgress, ProgressCallback progressCallback) {
+        if (!TextUtils.isEmpty(_url))
+            url = _url;
+        result = new StringBuilder();
+        try {
+            conn = (HttpURLConnection) new URL(_url).openConnection();
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+            conn.setUseCaches(false);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Connection", "Keep-Alive");
+            conn.setRequestProperty("Accept-Charset", "UTF-8");
+            boundary = "*****" + System.currentTimeMillis() + "*****";
+            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+            if (!StringUtils.isEmpty(bearer)) {
+                conn.addRequestProperty("Authorization", "Bearer " + bearer);
+            }
+            dos = new DataOutputStream(conn.getOutputStream());
+
+            long totalBytes = calculateBytes(params, files);
+            long uploadedBytes = 0;
+
+            for (String key : files.keySet()) {
+                String[] filePaths = files.get(key);
+                if (filePaths != null) {
+                    for (String filePath : filePaths) {
+                        File file = new File(filePath);
+                        long fileSize = file.length();
+                        FileInputStream fileInputStream = new FileInputStream(file);
+
+                        dos.writeBytes(twoHyphens + boundary + lineEnd);
+                        dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
+                        dos.writeBytes("Content-Type: " + URLConnection.guessContentTypeFromName(file.getName()) + lineEnd);
+                        dos.writeBytes(lineEnd);
+
+                        byte[] buffer = new byte[4096];
+                        int bytesRead;
+                        long fileUploaded = 0;
+                        while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                            dos.write(buffer, 0, bytesRead);
+                            uploadedBytes += bytesRead;
+                            fileUploaded += bytesRead;
+                            if (isSingleFileProgress) {
+                                progressCallback.onProgress(fileUploaded, fileSize, (int) ((fileUploaded * 100) / fileSize), file.getName());
+                            } else {
+
+                                progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName());
+                            }
+                        }
+                        dos.writeBytes(lineEnd);
+                        fileInputStream.close();
+                    }
+                }
+            }
+            if (params != null) {
+                writeParams(dos, params);
+            }
+            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode != HTTP_OK) {
+                BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                String line;
+                while ((line = errorReader.readLine()) != null) {
+                    result.append(line);
+                }
+                Log.e("Error Response", result.toString());
+                return new JSONObject(result.toString());
+            }
+            reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                result.append(line);
+            }
+            return new JSONObject(result.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            try {
+                if (dos != null) dos.close();
+                if (reader != null) reader.close();
+                if (conn != null) conn.disconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private long calculateBytes(HashMap<String, Object> params, HashMap<String, String[]> files) {
+        long total = 0;
+        if (files != null) {
+            for (String key : files.keySet()) {
+                String[] filePaths = files.get(key);
+                if (filePaths != null) {
+                    for (String path : filePaths) {
+                        total += new File(path).length();
+                    }
+                }
+            }
+        }
+        return total;
+    }
+
     public JSONObject uploadFiles(String _url, HashMap<String, Object> params, HashMap<String, String[]> files, String bearer) {
-        if (TextUtils.isEmpty(_url))
+        if (!TextUtils.isEmpty(_url))
             url = _url;
         result = new StringBuilder();
         try {
@@ -477,7 +581,8 @@ public class HttpUtils {
         }
     }
 
-    private void writeParams(DataOutputStream dos, HashMap<String, Object> params) throws IOException {
+    private void writeParams(DataOutputStream dos, HashMap<String, Object> params) throws
+            IOException {
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
@@ -501,17 +606,8 @@ public class HttpUtils {
         }
     }
 
-    /*private void writeFiles(DataOutputStream dos, HashMap<String, String> files) throws IOException {
-        for (String key : files.keySet()) {
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"" + lineEnd);
-            dos.writeBytes(lineEnd);
-            dos.writeBytes(files.get(key));
-            dos.writeBytes(lineEnd);
-        }
-    }*/
-
-    private void writeFiles(DataOutputStream dos, HashMap<String, String[]> files) throws IOException {
+    private void writeFiles(DataOutputStream dos, HashMap<String, String[]> files) throws
+            IOException {
         for (String key : files.keySet()) {
             String[] filePaths = files.get(key);
             if (filePaths != null) {
@@ -534,6 +630,20 @@ public class HttpUtils {
                 }
             }
         }
+    }
+
+    /*private void writeFiles(DataOutputStream dos, HashMap<String, String> files) throws IOException {
+        for (String key : files.keySet()) {
+            dos.writeBytes(twoHyphens + boundary + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"" + lineEnd);
+            dos.writeBytes(lineEnd);
+            dos.writeBytes(files.get(key));
+            dos.writeBytes(lineEnd);
+        }
+    }*/
+
+    public interface ProgressCallback {
+        void onProgress(long uploadedBytes, long totalBytes, int percent, String fileName);
     }
 
     public int getReadTimeout() {
