@@ -55,6 +55,7 @@ public class HttpUtils {
     private DataOutputStream dos;
     private JSONObject jsonObject;
     private boolean debug;
+    private long chunkSize;
 
     public static HttpUtils get() {
         HttpUtils httpUtils = new HttpUtils();
@@ -65,6 +66,12 @@ public class HttpUtils {
     public static HttpUtils get(boolean debug) {
         HttpUtils httpUtils = new HttpUtils();
         httpUtils.debug = debug;
+        return httpUtils;
+    }
+
+    public static HttpUtils get(long chunkSize) {
+        HttpUtils httpUtils = new HttpUtils();
+        httpUtils.chunkSize = chunkSize;
         return httpUtils;
     }
 
@@ -425,61 +432,85 @@ public class HttpUtils {
         if (!TextUtils.isEmpty(_url))
             url = _url;
         result = new StringBuilder();
+        long totalBytes = calculateBytes(files);
+        long uploadedBytes = 0;
         try {
-            conn = (HttpURLConnection) new URL(_url).openConnection();
-            conn.setDoInput(true);
-            conn.setDoOutput(true);
-            conn.setUseCaches(false);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Connection", "Keep-Alive");
-            conn.setRequestProperty("Accept-Charset", "UTF-8");
-            boundary = "*****" + System.currentTimeMillis() + "*****";
-            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-            if (!StringUtils.isEmpty(bearer)) {
-                conn.addRequestProperty("Authorization", "Bearer " + bearer);
-            }
-            dos = new DataOutputStream(conn.getOutputStream());
-
-            long totalBytes = calculateBytes(files);
-            long uploadedBytes = 0;
-
             for (String key : files.keySet()) {
                 String[] filePaths = files.get(key);
                 if (filePaths != null) {
                     for (String filePath : filePaths) {
                         File file = new File(filePath);
                         long fileSize = file.length();
-                        FileInputStream fileInputStream = new FileInputStream(file);
-
-                        dos.writeBytes(twoHyphens + boundary + lineEnd);
-                        dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
-                        dos.writeBytes("Content-Type: " + URLConnection.guessContentTypeFromName(file.getName()) + lineEnd);
-                        dos.writeBytes(lineEnd);
 
                         byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        long fileUploaded = 0;
-                        while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                            dos.write(buffer, 0, bytesRead);
-                            dos.flush();
-                            uploadedBytes += bytesRead;
-                            fileUploaded += bytesRead;
-                            if (isSingleFileProgress) {
-                                progressCallback.onProgress(fileUploaded, fileSize, (int) ((fileUploaded * 100) / fileSize), file.getName());
-                            } else {
+                        int chunkIndex = 0;
+                        int totalChunks = (int) Math.ceil((double) fileSize / chunkSize);
+                        while (chunkIndex < totalChunks) {
+                            FileInputStream fileInputStream = new FileInputStream(file);
+                            long chunkStart = (long) chunkIndex * chunkSize;
+                            long chunkEnd = Math.min(chunkStart + chunkSize, fileSize);
+                            fileInputStream.skip(chunkStart);
 
-                                progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName());
+                            conn = (HttpURLConnection) new URL(_url).openConnection();
+                            conn.setDoInput(true);
+                            conn.setDoOutput(true);
+                            conn.setUseCaches(false);
+                            conn.setRequestMethod("POST");
+                            conn.setRequestProperty("Connection", "Keep-Alive");
+                            conn.setRequestProperty("Accept-Charset", "UTF-8");
+                            conn.setChunkedStreamingMode(4096);
+                            boundary = "*****" + System.currentTimeMillis() + "*****";
+                            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+                            if (!StringUtils.isEmpty(bearer)) {
+                                conn.addRequestProperty("Authorization", "Bearer " + bearer);
                             }
+                            conn.setRequestProperty("chunk-index", String.valueOf(chunkIndex));
+                            conn.setRequestProperty("total-chunks", String.valueOf((fileSize / chunkSize) + 1));
+                            dos = new DataOutputStream(conn.getOutputStream());
+
+                            if (params != null) {
+                                writeParams(dos, params);
+                            }
+
+                            dos.writeBytes(twoHyphens + boundary + lineEnd);
+                            dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
+                            dos.writeBytes("Content-Type: " + URLConnection.guessContentTypeFromName(file.getName()) + lineEnd);
+                            dos.writeBytes(lineEnd);
+
+                            long chunkBytesUploaded = 0;
+                            while (chunkBytesUploaded < chunkEnd - chunkStart) {
+                                int bytesToRead = (int) Math.min(buffer.length, chunkEnd - chunkStart - chunkBytesUploaded);
+                                int bytesRead = fileInputStream.read(buffer, 0, bytesToRead);
+                                if (bytesRead == -1) break;
+                                dos.write(buffer, 0, bytesRead);
+                                dos.flush();
+                                uploadedBytes += bytesRead;
+                                chunkBytesUploaded += bytesRead;
+                                if (isSingleFileProgress) {
+                                    progressCallback.onProgress(uploadedBytes, fileSize, (int) ((uploadedBytes * 100) / fileSize), file.getName());
+                                } else {
+                                    progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName());
+                                }
+                            }
+                            dos.writeBytes(lineEnd);
+                            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+                            int responseCode = conn.getResponseCode();
+                            if (responseCode != HTTP_OK) {
+                                BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                                String line;
+                                while ((line = errorReader.readLine()) != null) {
+                                    result.append(line);
+                                }
+                                Log.e("Error Response", result.toString());
+                                return new JSONObject(result.toString());
+                            }
+                            conn.disconnect();
+                            chunkIndex++;
+                            System.out.println("Index: " + chunkIndex);
                         }
-                        dos.writeBytes(lineEnd);
-                        fileInputStream.close();
                     }
                 }
             }
-            if (params != null) {
-                writeParams(dos, params);
-            }
-            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
             int responseCode = conn.getResponseCode();
             if (responseCode != HTTP_OK) {
