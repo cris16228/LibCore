@@ -444,7 +444,7 @@ public class HttpUtils {
 
                         byte[] buffer = new byte[4096];
                         int chunkIndex = 0;
-                        int totalChunks = (int) Math.ceil((double) fileSize / chunkSize);
+                        int totalChunks = chunkSize > 1 ? (int) Math.ceil((double) fileSize / chunkSize) : 1;
                         while (chunkIndex < totalChunks) {
                             FileInputStream fileInputStream = new FileInputStream(file);
                             long chunkStart = (long) chunkIndex * chunkSize;
@@ -465,7 +465,7 @@ public class HttpUtils {
                                 conn.addRequestProperty("Authorization", "Bearer " + bearer);
                             }
                             conn.setRequestProperty("chunk-index", String.valueOf(chunkIndex));
-                            conn.setRequestProperty("total-chunks", String.valueOf((fileSize / chunkSize) + 1));
+                            conn.setRequestProperty("total-chunks", String.valueOf(totalChunks > 1 ? ((fileSize / chunkSize) + 1) : 1));
                             dos = new DataOutputStream(conn.getOutputStream());
 
                             if (params != null) {
