@@ -280,13 +280,14 @@ public class HttpUtils {
     public void downloadFile(String _url, String path, @Nullable HashMap<String, String> params, String bearer) {
         int count;
         try {
+            System.out.println("Downloading from " + _url);
             URL url = new URL(_url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setReadTimeout(10000);
             connection.setConnectTimeout(10000);
             connection.setInstanceFollowRedirects(true);
-            connection.setDoOutput(true);
+            connection.setDoOutput(false);
             connection.setDoInput(true);
             connection.setRequestProperty("Accept", "*/*");
             connection.setRequestProperty("Connection", "Keep-Alive");
@@ -305,7 +306,7 @@ public class HttpUtils {
             int responseCode = connection.getResponseCode();
             System.out.println("Response code: " + responseCode);
 
-            try (InputStream input = new BufferedInputStream(url.openStream(), 16 * 1024)) {
+            try (InputStream input = new BufferedInputStream(connection.getInputStream(), 16 * 1024)) {
                 File tmp = new File(path);
                 String tmpPath = tmp.getParent();
                 if (tmpPath != null && !new File(tmpPath).exists()) tmp.getParentFile().mkdirs();
