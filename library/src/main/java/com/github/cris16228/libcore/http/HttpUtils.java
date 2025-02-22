@@ -281,7 +281,16 @@ public class HttpUtils {
         int count;
         try {
             URL url = new URL(_url);
-            URLConnection connection = url.openConnection();
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setReadTimeout(10000);
+            connection.setConnectTimeout(10000);
+            connection.setInstanceFollowRedirects(true);
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            connection.setRequestProperty("Accept", "*/*");
+            connection.setRequestProperty("Connection", "Keep-Alive");
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
             if (params != null && !params.isEmpty()) {
                 for (Map.Entry<String, String> param : params.entrySet()) {
                     if (!param.getKey().equalsIgnoreCase("Authorization")) {
@@ -293,6 +302,8 @@ public class HttpUtils {
                 connection.addRequestProperty("Authorization", "Bearer " + bearer);
             }
             connection.connect();
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response code: " + responseCode);
 
             try (InputStream input = new BufferedInputStream(url.openStream(), 16 * 1024)) {
                 File tmp = new File(path);
