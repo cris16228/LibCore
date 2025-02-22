@@ -290,7 +290,7 @@ public class HttpUtils {
                 }
             }
             if (!StringUtils.isEmpty(bearer)) {
-                conn.addRequestProperty("Authorization", "Bearer " + bearer);
+                connection.addRequestProperty("Authorization", "Bearer " + bearer);
             }
             connection.connect();
 
