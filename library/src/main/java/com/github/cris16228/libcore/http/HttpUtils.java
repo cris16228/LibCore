@@ -311,7 +311,7 @@ public class HttpUtils {
                 }
             }
         } catch (Exception e) {
-            Log.e("Error: ", e.getMessage());
+            Log.e("Error: ", e.toString());
         }
     }
 
