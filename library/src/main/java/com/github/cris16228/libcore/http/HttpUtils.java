@@ -9,7 +9,6 @@ import android.webkit.MimeTypeMap;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.github.cris16228.libcore.LongUtils;
 import com.github.cris16228.libcore.StringUtils;
 import com.github.cris16228.libcore.deviceutils.DeviceUtils;
 
@@ -278,7 +277,7 @@ public class HttpUtils {
         }
     }
 
-    public void downloadFile(String _url, String path, @Nullable HashMap<String, String> params, String bearer) {
+    public void downloadFile(String _url, String path, @Nullable HashMap<String, String> params, String bearer, ProgressCallback progressCallback) {
         int count;
         try {
             URL url = new URL(_url);
@@ -305,6 +304,7 @@ public class HttpUtils {
 
             try (InputStream input = new BufferedInputStream(connection.getInputStream(), 16 * 1024)) {
                 File tmp = new File(path);
+                long fileSize = tmp.length();
                 String tmpPath = tmp.getParent();
                 if (tmpPath != null && !new File(tmpPath).exists()) tmp.getParentFile().mkdirs();
 
@@ -313,12 +313,11 @@ public class HttpUtils {
                     long totalRead = 0;
                     while ((count = input.read(data)) != -1) {
                         totalRead += count;
-                        System.out.println("Bytes read so far: " + totalRead + " (" + LongUtils.getSize(totalRead) + ")");
+                        progressCallback.onProgress(count, totalRead, (int) ((count * 100) / fileSize), tmp.getName());
                         output.write(data, 0, count);
                     }
                     // flushing output
                     output.flush();
-                    System.out.println("Download complete, total bytes: " + totalRead + " (" + LongUtils.getSize(totalRead) + ")");
                 }
             }
         } catch (Exception e) {
