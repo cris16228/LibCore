@@ -313,7 +313,7 @@ public class HttpUtils {
                     long totalRead = 0;
                     while ((count = input.read(data)) != -1) {
                         totalRead += count;
-                        progressCallback.onProgress(count, totalRead, (int) ((count * 100) / fileSize), tmp.getName());
+                        progressCallback.onProgress(totalRead, fileSize, (int) ((count * 100) / fileSize), tmp.getName());
                         output.write(data, 0, count);
                     }
                     // flushing output
