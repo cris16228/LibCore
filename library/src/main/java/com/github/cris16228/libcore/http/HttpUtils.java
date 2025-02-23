@@ -280,7 +280,6 @@ public class HttpUtils {
     public void downloadFile(String _url, String path, @Nullable HashMap<String, String> params, String bearer) {
         int count;
         try {
-            System.out.println("Downloading from " + _url);
             URL url = new URL(_url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -329,6 +328,56 @@ public class HttpUtils {
 
     public String post(String _url, HashMap<String, String> params) {
         return post(_url, params, null);
+    }
+
+    public String postJson(String _url, HashMap<String, String> headers, @Nullable HashMap<String, String> params, String bearer) {
+        if (TextUtils.isEmpty(_url))
+            url = _url;
+        result = new StringBuilder();
+        try {
+            URL url = new URL(_url);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setInstanceFollowRedirects(true);
+            connection.setDoOutput(true);
+            if (params != null && !params.isEmpty()) {
+                for (Map.Entry<String, String> param : params.entrySet()) {
+                    if (!param.getKey().equalsIgnoreCase("Authorization")) {
+                        connection.addRequestProperty(param.getKey(), param.getValue());
+                    }
+                }
+            }
+            if (!StringUtils.isEmpty(bearer)) {
+                connection.addRequestProperty("Authorization", "Bearer " + bearer);
+            }
+            JSONObject json = new JSONObject();
+            if (headers != null) {
+                for (Map.Entry<String, String> header : headers.entrySet()) {
+                    json.put(header.getKey(), header.getValue());
+                }
+            }
+            OutputStream outputStream = connection.getOutputStream();
+            outputStream.write(json.toString().getBytes(StandardCharsets.UTF_8));
+            outputStream.close();
+            try {
+                BufferedReader reader = getBufferedReader(connection);
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (StringUtils.isEmpty(result.toString()))
+            return result.toString();
+        try {
+            jsonObject = new JSONObject(result.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "Error parsing data " + e);
+            Log.e(TAG, result.toString());
+        }
+        return result.toString();
     }
 
     public String get(String urlString, boolean printJSON, int readTimeout, int connectionTimeout) {
