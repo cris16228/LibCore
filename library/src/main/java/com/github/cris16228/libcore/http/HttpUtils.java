@@ -316,8 +316,8 @@ public class HttpUtils {
                         progressCallback.onProgress(totalRead, fileSize, (int) ((count * 100) / fileSize), tmp.getName());
                         output.write(data, 0, count);
                     }
-                    // flushing output
                     output.flush();
+                    progressCallback.onFinish();
                 }
             }
         } catch (Exception e) {
@@ -604,7 +604,6 @@ public class HttpUtils {
                             }
                             conn.disconnect();
                             chunkIndex++;
-                            System.out.println("Index: " + chunkIndex);
                         }
                     }
                 }
@@ -625,6 +624,7 @@ public class HttpUtils {
             while ((line = reader.readLine()) != null) {
                 result.append(line);
             }
+            progressCallback.onFinish();
             return new JSONObject(result.toString());
         } catch (Exception e) {
             e.printStackTrace();
@@ -774,6 +774,8 @@ public class HttpUtils {
 
     public interface ProgressCallback {
         void onProgress(long uploadedBytes, long totalBytes, int percent, String fileName);
+
+        void onFinish();
     }
 
     public int getReadTimeout() {
