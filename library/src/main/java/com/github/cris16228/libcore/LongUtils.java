@@ -65,7 +65,7 @@ public class LongUtils {
         timeBuf.insert(0, time);
     }
 
-    public String getSize(long size) {
+    public static String getSize(long size) {
         long n = 1000;
         String s;
         double kb = size / (double) n;

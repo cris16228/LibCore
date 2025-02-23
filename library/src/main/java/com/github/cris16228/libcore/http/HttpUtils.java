@@ -9,6 +9,7 @@ import android.webkit.MimeTypeMap;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.github.cris16228.libcore.LongUtils;
 import com.github.cris16228.libcore.StringUtils;
 import com.github.cris16228.libcore.deviceutils.DeviceUtils;
 
@@ -283,8 +284,8 @@ public class HttpUtils {
             URL url = new URL(_url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-            connection.setReadTimeout(10000);
-            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(30000);
+            connection.setConnectTimeout(30000);
             connection.setInstanceFollowRedirects(true);
             connection.setDoOutput(false);
             connection.setDoInput(true);
@@ -301,9 +302,6 @@ public class HttpUtils {
             if (!StringUtils.isEmpty(bearer)) {
                 connection.addRequestProperty("Authorization", "Bearer " + bearer);
             }
-            connection.connect();
-            int responseCode = connection.getResponseCode();
-            System.out.println("Response code: " + responseCode);
 
             try (InputStream input = new BufferedInputStream(connection.getInputStream(), 16 * 1024)) {
                 File tmp = new File(path);
@@ -311,14 +309,16 @@ public class HttpUtils {
                 if (tmpPath != null && !new File(tmpPath).exists()) tmp.getParentFile().mkdirs();
 
                 try (OutputStream output = new BufferedOutputStream(Files.newOutputStream(Paths.get(path)))) {
-                    byte[] data = new byte[8192]; // Use a larger buffer size for better performance
-
+                    byte[] data = new byte[16 * 1024]; // Use a larger buffer size for better performance
+                    long totalRead = 0;
                     while ((count = input.read(data)) != -1) {
+                        totalRead += count;
+                        System.out.println("Bytes read so far: " + totalRead + " (" + LongUtils.getSize(totalRead) + ")");
                         output.write(data, 0, count);
                     }
-
                     // flushing output
                     output.flush();
+                    System.out.println("Download complete, total bytes: " + totalRead + " (" + LongUtils.getSize(totalRead) + ")");
                 }
             }
         } catch (Exception e) {
