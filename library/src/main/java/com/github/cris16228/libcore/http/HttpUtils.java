@@ -321,7 +321,7 @@ public class HttpUtils {
                     }
                     output.flush();
                     try {
-                        reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                         String line;
                         while ((line = reader.readLine()) != null) {
                             result.append(line);
