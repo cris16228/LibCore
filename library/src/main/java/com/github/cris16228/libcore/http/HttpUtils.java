@@ -304,7 +304,7 @@ public class HttpUtils {
 
             try (InputStream input = new BufferedInputStream(connection.getInputStream(), 16 * 1024)) {
                 File tmp = new File(path);
-                long fileSize = tmp.length();
+                long fileSize = connection.getContentLength();
                 String tmpPath = tmp.getParent();
                 if (tmpPath != null && !new File(tmpPath).exists()) tmp.getParentFile().mkdirs();
 
