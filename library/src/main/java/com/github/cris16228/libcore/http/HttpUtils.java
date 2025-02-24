@@ -320,17 +320,7 @@ public class HttpUtils {
                         output.write(data, 0, count);
                     }
                     output.flush();
-                    try {
-                        reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            result.append(line);
-                        }
-                    } catch (Exception e) {
-                        result.append("Download completed");
-                        e.printStackTrace();
-                    }
-                    progressCallback.onFinish(new JSONObject(result.toString()));
+                    progressCallback.onFinish(StringUtils.isEmpty(result) ? null : new JSONObject(result.toString()));
                 }
             }
         } catch (Exception e) {
@@ -788,7 +778,7 @@ public class HttpUtils {
     public interface ProgressCallback {
         void onProgress(long uploadedBytes, long totalBytes, int percent, String fileName);
 
-        void onFinish(JSONObject jsonObject);
+        void onFinish(@Nullable JSONObject jsonObject);
     }
 
     public int getReadTimeout() {
