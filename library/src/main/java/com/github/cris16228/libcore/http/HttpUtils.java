@@ -279,6 +279,9 @@ public class HttpUtils {
 
     public void downloadFile(String _url, String path, @Nullable HashMap<String, String> params, String bearer, ProgressCallback progressCallback) {
         int count;
+        if (TextUtils.isEmpty(_url))
+            url = _url;
+        result = new StringBuilder();
         try {
             URL url = new URL(_url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -304,7 +307,7 @@ public class HttpUtils {
 
             try (InputStream input = new BufferedInputStream(connection.getInputStream(), 16 * 1024)) {
                 File tmp = new File(path);
-                long fileSize = connection.getContentLength();
+                long fileSize = connection.getContentLengthLong();
                 String tmpPath = tmp.getParent();
                 if (tmpPath != null && !new File(tmpPath).exists()) tmp.getParentFile().mkdirs();
 
