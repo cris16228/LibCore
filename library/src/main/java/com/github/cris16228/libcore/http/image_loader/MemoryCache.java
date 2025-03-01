@@ -102,7 +102,7 @@ public class MemoryCache {
 
     public void put(String id, Bitmap bitmap, boolean saveInCache) {
         if (bitmap == null) {
-            bitmap = BitmapFactory.decodeFile(path);
+            bitmap = BitmapFactory.decodeFile(id);
         }
         put(id, bitmap, false, saveInCache);
     }
