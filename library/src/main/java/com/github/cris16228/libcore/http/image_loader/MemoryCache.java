@@ -25,7 +25,7 @@ public class MemoryCache {
     private final Context context;
     private long size = 0;
     private long limit = 1000000;
-    private String path;
+    private final String path;
 
     public MemoryCache(Context context, String path) {
         this.context = context;
@@ -101,6 +101,9 @@ public class MemoryCache {
     }
 
     public void put(String id, Bitmap bitmap, boolean saveInCache) {
+        if (bitmap == null) {
+            bitmap = BitmapFactory.decodeFile(path);
+        }
         put(id, bitmap, false, saveInCache);
     }
 
