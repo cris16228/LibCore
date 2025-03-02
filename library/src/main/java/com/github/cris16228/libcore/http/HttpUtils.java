@@ -539,8 +539,8 @@ public class HttpUtils {
             for (String key : files.keySet()) {
                 String[] filePaths = files.get(key);
                 if (filePaths != null) {
-                    for (String filePath : filePaths) {
-                        File file = new File(filePath);
+                    for (int i = 0; i < filePaths.length; i++) {
+                        File file = new File(filePaths[i]);
                         long fileSize = file.length();
 
                         byte[] buffer = new byte[4096];
@@ -567,6 +567,7 @@ public class HttpUtils {
                             }
                             conn.setRequestProperty("chunk-index", String.valueOf(chunkIndex));
                             conn.setRequestProperty("total-chunks", String.valueOf(totalChunks > 1 ? ((fileSize / chunkSize) + 1) : 1));
+                            conn.setRequestProperty("index", String.valueOf(i));
                             dos = new DataOutputStream(conn.getOutputStream());
 
                             if (params != null) {
