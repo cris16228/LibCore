@@ -15,9 +15,17 @@ public class LongUtils {
         return longUtils;
     }
 
-    public static String toReadableTimeFull(long timeInMillis, String timeFormat) {
+    public static String toReadableTimeFull(long timeInMillis, String timeFormat, boolean hideUnnecessary) {
         char[] units = {'y', 'M', 'w', 'd', 'h', 'm', 's'};
-        long[] divisor = {365 * 24 * 60 * 60 * 1000L, 30 * 24 * 60 * 60 * 1000L, 7 * 24 * 60 * 60 * 1000L, 24 * 60 * 60 * 1000L, 60 * 60 * 1000L, 60 * 1000L, 1000L};
+        long[] divisor = {
+                365 * 24 * 60 * 60 * 1000L,
+                30 * 24 * 60 * 60 * 1000L,
+                7 * 24 * 60 * 60 * 1000L,
+                24 * 60 * 60 * 1000L,
+                60 * 60 * 1000L,
+                60 * 1000L,
+                1000L
+        };
         String[] unitNames = {" years", " months", " weeks", " days", " hours", " minutes", " seconds"};
         boolean past = timeInMillis < 0;
         if (past) timeInMillis *= -1;
@@ -39,6 +47,8 @@ public class LongUtils {
                 if (time > 0L) {
                     timeInMillis -= time * divisor[unitIndex];
                     prependTimeAndUnit(timeBuf, time, time > 1L ? unitNames[unitIndex] : unitNames[unitIndex].substring(0, unitNames[unitIndex].length() - 1));
+                    if (hideUnnecessary)
+                        break;
                 }
             }
         }
@@ -150,6 +160,6 @@ public class LongUtils {
     }
 
     public String toReadableTimeFull(long timeInMillis) {
-        return toReadableTimeFull(timeInMillis, "dhm");
+        return toReadableTimeFull(timeInMillis, "dhm", false);
     }
 }

@@ -49,7 +49,7 @@ import java.util.concurrent.Future;
 
 public class ImageLoader {
 
-    private static final int THREAD_POOL_SIZE = 3;
+    private static final int THREAD_POOL_SIZE = 12;
     private final Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<>());
     private final Map<Uri, Future<?>> loadingTasks = new HashMap<>();
     private MemoryCache memoryCache;
@@ -271,14 +271,21 @@ public class ImageLoader {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
         Bitmap bitmapCache = memoryCache.get(path);
-        if (bitmapCache != null) {
-            imageView.setImageBitmap(bitmapCache);
-            imageView.invalidate();
-        } else {
-            memoryCache.put(path, bitmap, saveInCache);
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
+        if (bitmapCache == null) {
+            memoryCache.put(path, bitmap);
+            bitmapCache = memoryCache.get(path);
+            File file = fileCache.getFile(path); // Get the cache file for the URL
+            bitmap = BitmapFactory.decodeFile(path);
+            try (FileOutputStream fos = new FileOutputStream(file);
+                 BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos); // Save as PNG with full quality
+                bos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        imageView.setImageBitmap(bitmapCache);
+        imageView.invalidate();
         if (!StringUtils.isEmpty(path)) {
             imageViews.put(imageView, path);
             queuePhoto(path, imageView);
