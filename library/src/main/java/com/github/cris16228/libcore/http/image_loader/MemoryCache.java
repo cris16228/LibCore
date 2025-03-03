@@ -56,21 +56,38 @@ public class MemoryCache {
                 return cache.get(id);
             File file = new File(id);
             if (file.exists()) {
-                if (file.length() > 0) {
-                    Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
-                    if (bitmap != null) {
-                        return bitmap;
-                    }
-                } else {
-                    file.delete();
-                    return null;
-                }
+                return decodeSampleFromFile(file.getAbsolutePath(), 200, 200);
             }
         } catch (NullPointerException ex) {
             ex.printStackTrace();
             return null;
         }
         return null;
+    }
+
+    private Bitmap decodeSampleFromFile(String path, int reqWidth, int reqHeight) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, options);
+
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeFile(path, options);
+    }
+
+    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        int height = options.outHeight;
+        int width = options.outWidth;
+        int inSampleSize = 1;
+        if (height > reqHeight || width > reqWidth) {
+            int halfHeight = height / 2;
+            int halfWidth = width / 2;
+
+            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
     }
 
     public void put(String id, Bitmap bitmap, boolean isLocal, boolean saveInCache) {
@@ -109,14 +126,14 @@ public class MemoryCache {
 
     private void checkSize() {
         if (size > limit) {
-            Iterator<Map.Entry<String, Bitmap>> iterator = cache.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, Bitmap> entry = iterator.next();
-                size -= sizeInBytes(entry.getValue());
-                iterator.remove();
-                if (size <= limit)
-                    break;
-            }
+            new Thread(() -> {
+                Iterator<Map.Entry<String, Bitmap>> iterator = cache.entrySet().iterator();
+                while (iterator.hasNext() && size > limit) {
+                    Map.Entry<String, Bitmap> entry = iterator.next();
+                    size -= sizeInBytes(entry.getValue());
+                    iterator.remove();
+                }
+            }).start();
         }
     }
 

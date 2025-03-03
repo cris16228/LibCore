@@ -46,6 +46,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ImageLoader {
 
@@ -123,90 +124,102 @@ public class ImageLoader {
     public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
+        executor.execute(() -> {
+            Bitmap bitmap = memoryCache.get(url);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+                imageView.invalidate();
+                if (loadImage != null) {
+                    loadImage.onSuccess(bitmap);
+                }
+            } else {
+                imageViews.put(imageView, url);
+                queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
             }
-        } else {
-            imageViews.put(imageView, url);
-            queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
-        }
+        });
     }
 
     public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, HashMap<String, String> params) {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
+        executor.execute(() -> {
+            Bitmap bitmap = memoryCache.get(url);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+                imageView.invalidate();
+                if (loadImage != null) {
+                    loadImage.onSuccess(bitmap);
+                }
+            } else {
+                imageViews.put(imageView, url);
+                queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress, params);
             }
-        } else {
-            imageViews.put(imageView, url);
-            queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress, params);
-        }
+        });
     }
 
     public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, boolean saveInCache) {
         this.saveInCache = saveInCache;
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
+        executor.execute(() -> {
+            Bitmap bitmap = memoryCache.get(url);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+                imageView.invalidate();
+                if (loadImage != null) {
+                    loadImage.onSuccess(bitmap);
+                }
+            } else {
+                imageViews.put(imageView, url);
+                queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
             }
-        } else {
-            imageViews.put(imageView, url);
-            queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
-        }
+        });
     }
 
     public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, HashMap<String, String> params, boolean saveInCache) {
         this.saveInCache = saveInCache;
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
+        executor.execute(() -> {
+            Bitmap bitmap = memoryCache.get(url);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+                imageView.invalidate();
+                if (loadImage != null) {
+                    loadImage.onSuccess(bitmap);
+                }
+            } else {
+                imageViews.put(imageView, url);
+                queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress, params);
             }
-        } else {
-            imageViews.put(imageView, url);
-            queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress, params);
-        }
+        });
     }
 
     public void download(String url, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap == null) {
-            queuePhoto(url, loadImage, connectionErrors, downloadProgress);
-        }
+        executor.execute(() -> {
+            Bitmap bitmap = memoryCache.get(url);
+            if (bitmap == null) {
+                queuePhoto(url, loadImage, connectionErrors, downloadProgress);
+            }
+        });
     }
 
     public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, String offlineUrl, DownloadProgress downloadProgress) {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
+        executor.execute(() -> {
+            Bitmap bitmap = memoryCache.get(url);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+                imageView.invalidate();
+                if (loadImage != null) {
+                    loadImage.onSuccess(bitmap);
+                }
+            } else {
+                imageViews.put(imageView, offlineUrl);
+                queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
             }
-        } else {
-            imageViews.put(imageView, offlineUrl);
-            queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
-        }
+        });
     }
 
     public void load(List<Object> urls, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors) {
@@ -215,52 +228,58 @@ public class ImageLoader {
         String url = (String) queueUtils.dequeue();
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            load(urls, imageView, loadImage, connectionErrors);
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
+        executor.execute(() -> {
+            Bitmap bitmap = memoryCache.get(url);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+                imageView.invalidate();
+                load(urls, imageView, loadImage, connectionErrors);
+                if (loadImage != null) {
+                    loadImage.onSuccess(bitmap);
+                }
+            } else {
+                imageViews.put(imageView, url);
+                queuePhoto(urls, url, imageView, loadImage, connectionErrors);
             }
-        } else {
-            imageViews.put(imageView, url);
-            queuePhoto(urls, url, imageView, loadImage, connectionErrors);
-        }
+        });
     }
 
 
     public void load(byte[] bytes, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
-        Base64Utils.Base64Encoder encoder = new Base64Utils.Base64Encoder();
-        String url = encoder.encrypt(Arrays.toString(bytes), Base64.NO_WRAP, null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
+        executor.execute(() -> {
+            Base64Utils.Base64Encoder encoder = new Base64Utils.Base64Encoder();
+            String url = encoder.encrypt(Arrays.toString(bytes), Base64.NO_WRAP, null);
+            Bitmap bitmap = memoryCache.get(url);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+                imageView.invalidate();
+                if (loadImage != null) {
+                    loadImage.onSuccess(bitmap);
+                }
+            } else {
+                imageViews.put(imageView, url);
+                queuePhoto(bytes, imageView, loadImage, connectionErrors, downloadProgress);
             }
-        } else {
-            imageViews.put(imageView, url);
-            queuePhoto(bytes, imageView, loadImage, connectionErrors, downloadProgress);
-        }
+        });
     }
 
 
     void load(byte[] bytes, ImageView imageView, String path) {
-        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        imageView.setImageBitmap(null);
-        imageView.setImageDrawable(null);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-        }
-        if (!StringUtils.isEmpty(path)) {
-            imageViews.put(imageView, path);
-            queuePhoto(bytes, imageView);
-        }
+        executor.execute(() -> {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            imageView.setImageBitmap(null);
+            imageView.setImageDrawable(null);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+                imageView.invalidate();
+            }
+            if (!StringUtils.isEmpty(path)) {
+                imageViews.put(imageView, path);
+                queuePhoto(bytes, imageView);
+            }
+        });
     }
 
     public void load(byte[] bytes, ImageView imageView) {
@@ -270,26 +289,29 @@ public class ImageLoader {
     public void load(Bitmap bitmap, ImageView imageView, String path, boolean saveInCache) {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
-        Bitmap bitmapCache = memoryCache.get(path);
-        if (bitmapCache == null) {
-            memoryCache.put(path, bitmap);
-            bitmapCache = memoryCache.get(path);
-            File file = fileCache.getFile(path); // Get the cache file for the URL
-            bitmap = BitmapFactory.decodeFile(path);
-            try (FileOutputStream fos = new FileOutputStream(file);
-                 BufferedOutputStream bos = new BufferedOutputStream(fos)) {
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos); // Save as PNG with full quality
-                bos.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
+        AtomicReference<Bitmap> tpm = new AtomicReference<>(bitmap);
+        executor.execute(() -> {
+            Bitmap bitmapCache = memoryCache.get(path);
+            if (bitmapCache == null) {
+                memoryCache.put(path, tpm.get());
+                bitmapCache = memoryCache.get(path);
+                File file = fileCache.getFile(path); // Get the cache file for the URL
+                tpm.set(BitmapFactory.decodeFile(path));
+                try (FileOutputStream fos = new FileOutputStream(file);
+                     BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+                    tpm.get().compress(Bitmap.CompressFormat.PNG, 100, bos); // Save as PNG with full quality
+                    bos.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
-        imageView.setImageBitmap(bitmapCache);
-        imageView.invalidate();
-        if (!StringUtils.isEmpty(path)) {
-            imageViews.put(imageView, path);
-            queuePhoto(path, imageView);
-        }
+            imageView.setImageBitmap(bitmapCache);
+            imageView.invalidate();
+            if (!StringUtils.isEmpty(path)) {
+                imageViews.put(imageView, path);
+                queuePhoto(path, imageView);
+            }
+        });
     }
 
     public void load(Bitmap bitmap, ImageView imageView, String path) {
@@ -299,11 +321,13 @@ public class ImageLoader {
     public void load(@RawRes @DrawableRes @NonNull Integer resourceId, ImageView imageView) {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resourceId);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-        }
+        executor.execute(() -> {
+            Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resourceId);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+                imageView.invalidate();
+            }
+        });
     }
 
     public void queuePhoto(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
