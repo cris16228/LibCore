@@ -127,8 +127,10 @@ public class ImageLoader {
         executor.execute(() -> {
             Bitmap bitmap = memoryCache.get(url);
             if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
+                handler.post(() -> {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.invalidate();
+                });
                 if (loadImage != null) {
                     loadImage.onSuccess(bitmap);
                 }
@@ -145,8 +147,10 @@ public class ImageLoader {
         executor.execute(() -> {
             Bitmap bitmap = memoryCache.get(url);
             if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
+                handler.post(() -> {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.invalidate();
+                });
                 if (loadImage != null) {
                     loadImage.onSuccess(bitmap);
                 }
@@ -164,8 +168,10 @@ public class ImageLoader {
         executor.execute(() -> {
             Bitmap bitmap = memoryCache.get(url);
             if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
+                handler.post(() -> {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.invalidate();
+                });
                 if (loadImage != null) {
                     loadImage.onSuccess(bitmap);
                 }
@@ -183,8 +189,10 @@ public class ImageLoader {
         executor.execute(() -> {
             Bitmap bitmap = memoryCache.get(url);
             if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
+                handler.post(() -> {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.invalidate();
+                });
                 if (loadImage != null) {
                     loadImage.onSuccess(bitmap);
                 }
@@ -210,8 +218,10 @@ public class ImageLoader {
         executor.execute(() -> {
             Bitmap bitmap = memoryCache.get(url);
             if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
+                handler.post(() -> {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.invalidate();
+                });
                 if (loadImage != null) {
                     loadImage.onSuccess(bitmap);
                 }
@@ -231,8 +241,10 @@ public class ImageLoader {
         executor.execute(() -> {
             Bitmap bitmap = memoryCache.get(url);
             if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
+                handler.post(() -> {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.invalidate();
+                });
                 load(urls, imageView, loadImage, connectionErrors);
                 if (loadImage != null) {
                     loadImage.onSuccess(bitmap);
@@ -253,8 +265,10 @@ public class ImageLoader {
             String url = encoder.encrypt(Arrays.toString(bytes), Base64.NO_WRAP, null);
             Bitmap bitmap = memoryCache.get(url);
             if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
+                handler.post(() -> {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.invalidate();
+                });
                 if (loadImage != null) {
                     loadImage.onSuccess(bitmap);
                 }
@@ -272,8 +286,10 @@ public class ImageLoader {
             imageView.setImageBitmap(null);
             imageView.setImageDrawable(null);
             if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
+                handler.post(() -> {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.invalidate();
+                });
             }
             if (!StringUtils.isEmpty(path)) {
                 imageViews.put(imageView, path);
@@ -305,8 +321,10 @@ public class ImageLoader {
                     e.printStackTrace();
                 }
             }
-            imageView.setImageBitmap(bitmapCache);
-            imageView.invalidate();
+            handler.post(() -> {
+                imageView.setImageBitmap(bitmap);
+                imageView.invalidate();
+            });
             if (!StringUtils.isEmpty(path)) {
                 imageViews.put(imageView, path);
                 queuePhoto(path, imageView);
@@ -324,8 +342,10 @@ public class ImageLoader {
         executor.execute(() -> {
             Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resourceId);
             if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
+                handler.post(() -> {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.invalidate();
+                });
             }
         });
     }
