@@ -128,7 +128,7 @@ public class Fresco {
         return this;
     }
 
-    private Fresco addParam(String key, String value) {
+    public Fresco addParam(String key, String value) {
         params.put(key, value);
         return this;
     }
