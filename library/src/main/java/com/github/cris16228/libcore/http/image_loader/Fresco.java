@@ -55,7 +55,7 @@ public class Fresco {
     private ImageView finalImageView;
     private Handler handler;
     private String url;
-    private HashMap<String, String> params;
+    private final HashMap<String, String> params = new HashMap<>();
     private LoadImage loadImage;
 
 
