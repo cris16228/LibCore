@@ -11,13 +11,7 @@ public class FileCache {
     public final File cacheDir;
 
     public FileCache(Context context) {
-        cacheDir = context.getCacheDir();
-        if (!cacheDir.exists())
-            cacheDir.mkdirs();
-    }
-
-    public FileCache(String path) {
-        cacheDir = new File(path);
+        cacheDir = new File(context.getCacheDir() + "/fresco");
         if (!cacheDir.exists())
             cacheDir.mkdirs();
     }

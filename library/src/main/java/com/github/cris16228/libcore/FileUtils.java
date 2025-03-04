@@ -19,7 +19,7 @@ import android.webkit.MimeTypeMap;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 
-import com.github.cris16228.libcore.http.image_loader.ImageLoader;
+import com.github.cris16228.libcore.http.image_loader.Fresco;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -173,7 +173,7 @@ public class FileUtils {
         return path;
     }
 
-    public void copyStream(InputStream is, OutputStream os, int contentLength, ImageLoader.DownloadProgress downloadProgress) {
+    public void copyStream(InputStream is, OutputStream os, int contentLength, Fresco.DownloadProgress downloadProgress) {
         try {
             byte[] data = new byte[33554432];
             int count;

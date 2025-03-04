@@ -27,9 +27,9 @@ public class MemoryCache {
     private long limit = 1000000;
     private final String path;
 
-    public MemoryCache(Context context, String path) {
+    public MemoryCache(Context context) {
         this.context = context;
-        this.path = path;
+        this.path = context.getCacheDir() + "/fresco";
         setLimit(Runtime.getRuntime().maxMemory() / 4);
     }
 
