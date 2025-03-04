@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.util.Log;
+import android.util.LruCache;
 
 import com.github.cris16228.libcore.Base64Utils;
 import com.github.cris16228.libcore.StringUtils;
@@ -14,14 +15,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class MemoryCache {
 
-    private final Map<String, Bitmap> cache = Collections.synchronizedMap(new LinkedHashMap<>(10, 1.5f, true));
+    /*private final Map<String, Bitmap> cache = Collections.synchronizedMap(new LinkedHashMap<>(10, 1.5f, true));*/
+    private final LruCache<String, Bitmap> cache;
     private final Context context;
     private long size = 0;
     private long limit = 1000000;
@@ -31,6 +29,12 @@ public class MemoryCache {
         this.context = context;
         this.path = context.getCacheDir() + "/fresco";
         setLimit(Runtime.getRuntime().maxMemory() / 4);
+        this.cache = new LruCache<String, Bitmap>((int) limit) {
+            @Override
+            protected int sizeOf(String key, Bitmap value) {
+                return value.getByteCount() / 1024;
+            }
+        };
     }
 
     public Bitmap getBitmap(byte[] bytes) {
@@ -52,7 +56,7 @@ public class MemoryCache {
         }
         id = new File(path, id).getAbsolutePath();
         try {
-            if (cache.containsKey(id))
+            if (cache.get(id) != null)
                 return cache.get(id);
             File file = new File(id);
             if (file.exists()) {
@@ -103,11 +107,10 @@ public class MemoryCache {
                     Log.e("MemoryCache", "Bitmap is null");
                 }
             }
-            if (cache.containsKey(id))
+            if (cache.get(id) != null)
                 size -= sizeInBytes(cache.get(id));
             cache.put(id, bitmap);
             size += sizeInBytes(bitmap);
-            checkSize();
         } catch (Throwable ex) {
             ex.printStackTrace();
         }
@@ -124,26 +127,13 @@ public class MemoryCache {
         put(id, bitmap, false, saveInCache);
     }
 
-    private void checkSize() {
-        if (size > limit) {
-            new Thread(() -> {
-                Iterator<Map.Entry<String, Bitmap>> iterator = cache.entrySet().iterator();
-                while (iterator.hasNext() && size > limit) {
-                    Map.Entry<String, Bitmap> entry = iterator.next();
-                    size -= sizeInBytes(entry.getValue());
-                    iterator.remove();
-                }
-            }).start();
-        }
-    }
-
     public String getPath() {
         return path;
     }
 
     public void clear() {
         try {
-            cache.clear();
+            cache.evictAll();
             size = 0;
         } catch (NullPointerException ex) {
             ex.printStackTrace();

@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
@@ -43,8 +44,8 @@ import java.util.concurrent.Future;
 
 public class Fresco {
 
-    private static final int THREAD_POOL_SIZE = 12;
-    private final Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final int THREAD_POOL_SIZE = 4;
+    private final Map<WeakReference<ImageView>, String> imageViews = Collections.synchronizedMap(new WeakHashMap<>());
     private final Map<Uri, Future<?>> loadingTasks = new HashMap<>();
     private MemoryCache memoryCache;
     private FileCache fileCache;
@@ -75,26 +76,6 @@ public class Fresco {
         return this;
     }
 
-    /*
-    * public void load(Bitmap bitmap, ImageView imageView, String path) {
-        imageView.setImageBitmap(null);
-        imageView.setImageDrawable(null);
-        Bitmap bitmapCache = memoryCache.get(path);
-        if (bitmapCache != null) {
-            imageView.setImageBitmap(bitmapCache);
-            imageView.invalidate();
-        } else {
-            memoryCache.put(path, bitmap, true);
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-        }
-        if (!StringUtils.isEmpty(path)) {
-            imageViews.put(imageView, path);
-            queuePhoto(path, imageView);
-        }
-    }*/
-
-
     public Fresco load(String url) {
         this.url = url;
         return this;
@@ -116,16 +97,11 @@ public class Fresco {
                     imageView.setImageBitmap(bitmap);
                     imageView.invalidate();
                 } else {
-                    imageViews.put(imageView, url);
+                    imageViews.put(new WeakReference<>(imageView), url);
                     queuePhoto(url, imageView/*, loadImage, connectionErrors, downloadProgress*/);
                 }
             }
         });
-
-            /*if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
-            }*/
-
         return this;
     }
 
@@ -134,216 +110,10 @@ public class Fresco {
         return this;
     }
 
-    /*public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress,) {
-        imageView.setImageBitmap(null);
-        imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
-            }
-        } else {
-            imageViews.put(imageView, url);
-            queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress, params);
-        }
-    }
-
-    public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, boolean saveInCache) {
-        this.saveInCache = saveInCache;
-        imageView.setImageBitmap(null);
-        imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
-            }
-        } else {
-            imageViews.put(imageView, url);
-            queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
-        }
-    }*/
-
-    /*public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, HashMap<String, String> params, boolean saveInCache) {
-     *//*this.saveInCache = saveInCache;*//*
-        imageView.setImageBitmap(null);
-        imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
-            }
-        } else {
-            imageViews.put(imageView, url);
-            queuePhoto(url, bitmap);
-        }
-    }*/
-
-    /*public void download(String url, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap == null) {
-            queuePhoto(url, loadImage, connectionErrors, downloadProgress);
-        }
-    }*/
-
-    /*public void load(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, String offlineUrl, DownloadProgress downloadProgress) {
-        imageView.setImageBitmap(null);
-        imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
-            }
-        } else {
-            imageViews.put(imageView, offlineUrl);
-            queuePhoto(url, imageView, loadImage, connectionErrors, downloadProgress);
-        }
-    }
-
-    public void load(List<Object> urls, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors) {
-        QueueUtils queueUtils = new QueueUtils();
-        queueUtils.setQueue(urls);
-        String url = (String) queueUtils.dequeue();
-        imageView.setImageBitmap(null);
-        imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            load(urls, imageView, loadImage, connectionErrors);
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
-            }
-        } else {
-            imageViews.put(imageView, url);
-            queuePhoto(urls, url, imageView, loadImage, connectionErrors);
-        }
-    }
-
-
-    public void load(byte[] bytes, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
-        imageView.setImageBitmap(null);
-        imageView.setImageDrawable(null);
-        Base64Utils.Base64Encoder encoder = new Base64Utils.Base64Encoder();
-        String url = encoder.encrypt(Arrays.toString(bytes), Base64.NO_WRAP, null);
-        Bitmap bitmap = memoryCache.get(url);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-            if (loadImage != null) {
-                loadImage.onSuccess(bitmap);
-            }
-        } else {
-            imageViews.put(imageView, url);
-            queuePhoto(bytes, imageView, loadImage, connectionErrors, downloadProgress);
-        }
-    }
-
-
-    void load(byte[] bytes, ImageView imageView, String path) {
-        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        imageView.setImageBitmap(null);
-        imageView.setImageDrawable(null);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-        }
-        if (!StringUtils.isEmpty(path)) {
-            imageViews.put(imageView, path);
-            queuePhoto(bytes, imageView);
-        }
-    }
-
-    public void load(byte[] bytes, ImageView imageView) {
-        load(bytes, imageView, null);
-    }
-
-    public void load(Bitmap bitmap, ImageView imageView, String path, boolean saveInCache) {
-        imageView.setImageBitmap(null);
-        imageView.setImageDrawable(null);
-        Bitmap bitmapCache = memoryCache.get(path);
-        if (bitmapCache == null) {
-            memoryCache.put(path, bitmap);
-            bitmapCache = memoryCache.get(path);
-            File file = fileCache.getFile(path); // Get the cache file for the URL
-            bitmap = BitmapFactory.decodeFile(path);
-            try (FileOutputStream fos = new FileOutputStream(file);
-                 BufferedOutputStream bos = new BufferedOutputStream(fos)) {
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos); // Save as PNG with full quality
-                bos.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        imageView.setImageBitmap(bitmapCache);
-        imageView.invalidate();
-        if (!StringUtils.isEmpty(path)) {
-            imageViews.put(imageView, path);
-            queuePhoto(path, imageView);
-        }
-    }
-
-    public void load(Bitmap bitmap, ImageView imageView, String path) {
-        load(bitmap, imageView, path, false);
-    }*/
-
-    /*public void load(@RawRes @DrawableRes @NonNull Integer resourceId, ImageView imageView) {
-        imageView.setImageBitmap(null);
-        imageView.setImageDrawable(null);
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resourceId);
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
-            imageView.invalidate();
-        }
-    }*/
-
     public void queuePhoto(String url, ImageView imageView) {
         PhotoToLoad photoToLoad = new PhotoToLoad(url, imageView);
         executor.submit(new PhotoLoader(photoToLoad));
     }
-
-    /*private void queuePhoto(String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress, HashMap<String, String> params) {
-        PhotoToLoad photoToLoad = new PhotoToLoad(url, imageView);
-        executor.submit(new PhotoLoader(photoToLoad, loadImage, connectionErrors, downloadProgress, params));
-    }
-
-    public void queuePhoto(byte[] bytes, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
-        PhotoToLoad photoToLoad = new PhotoToLoad(bytes, imageView);
-        executor.submit(new PhotoLoader(photoToLoad, loadImage, connectionErrors, downloadProgress));
-    }
-
-    public void queuePhoto(byte[] bytes, ImageView imageView) {
-        PhotoToLoad photoToLoad = new PhotoToLoad(bytes, imageView);
-        executor.submit(new PhotoLoader(photoToLoad));
-    }
-
-    private void queuePhoto(List<Object> urls, String url, ImageView imageView, LoadImage loadImage, ConnectionErrors connectionErrors) {
-        PhotoToLoad photoToLoad = new PhotoToLoad(url, imageView);
-        executor.submit(new PhotoLoader(urls, photoToLoad, loadImage, connectionErrors));
-    }
-
-    private void queuePhoto(String url, LoadImage loadImage, ConnectionErrors connectionErrors, DownloadProgress downloadProgress) {
-        PhotoToLoad photoToLoad = new PhotoToLoad(url);
-        executor.submit(new PhotoLoader(photoToLoad, loadImage, connectionErrors, downloadProgress));
-    }
-
-    public void queuePhoto(String path, ImageView imageView, LoadImage loadImage, FileType fileType) {
-        PhotoToLoad photoToLoad = new PhotoToLoad(path, imageView);
-        executor.submit(new PhotoLoader(photoToLoad, loadImage, true, fileType));
-    }
-
-    public void queuePhoto(String path, ImageView imageView) {
-        PhotoToLoad photoToLoad = new PhotoToLoad(path, imageView);
-        executor.submit(new PhotoLoader(photoToLoad));
-    }*/
-
     private void cancelLoadingTask(Uri uri) {
         Future<?> loadingTask = loadingTasks.get(uri);
         if (loadingTask != null) {
@@ -377,7 +147,7 @@ public class Fresco {
                 handler.post(() -> imageView.setImageBitmap(thumbnail));
             } else {
                 Log.d("loadFileThumbnail", "Thumbnail not found in memory cache for URI: " + uri);
-                imageViews.put(imageView, uri.getPath());
+                imageViews.put(new WeakReference<>(imageView), uri.getPath());
                 queuePhoto(uri.getPath(), imageView);
             }
         });
@@ -655,37 +425,6 @@ public class Fresco {
         private final HashMap<String, String> params;
 
 
-        /*PhotoLoader(PhotoToLoad _photoToLoad, LoadImage _loadImage, ConnectionErrors _connectionErrors, DownloadProgress _downloadProgress) {
-            photoToLoad = _photoToLoad;
-            loadImage = _loadImage;
-            connectionErrors = _connectionErrors;
-            downloadProgress = _downloadProgress;
-            params = new HashMap<>();
-        }
-
-        PhotoLoader(PhotoToLoad _photoToLoad, LoadImage _loadImage, ConnectionErrors _connectionErrors, DownloadProgress _downloadProgress, HashMap<String, String> params) {
-            photoToLoad = _photoToLoad;
-            loadImage = _loadImage;
-            connectionErrors = _connectionErrors;
-            downloadProgress = _downloadProgress;
-            this.params = params;
-        }
-
-        PhotoLoader(PhotoToLoad _photoToLoad, LoadImage _loadImage, boolean _local, FileType fileType) {
-            photoToLoad = _photoToLoad;
-            loadImage = _loadImage;
-            local = _local;
-            bitmap = getFileThumbnail(Uri.parse(_photoToLoad.url), fileType);
-            params = new HashMap<>();
-        }
-
-        PhotoLoader(List<Object> _urls, PhotoToLoad _photoToLoad, LoadImage _loadImage, ConnectionErrors _connectionErrors) {
-            photoToLoad = _photoToLoad;
-            loadImage = _loadImage;
-            connectionErrors = _connectionErrors;
-            urls = _urls;
-            params = new HashMap<>();
-        }*/
 
         public PhotoLoader(PhotoToLoad photoToLoad) {
             this.photoToLoad = photoToLoad;
@@ -694,6 +433,10 @@ public class Fresco {
 
         @Override
         public void run() {
+            if (bitmap != null && !bitmap.isRecycled()) {
+                bitmap.recycle();
+                bitmap = null;
+            }
             if (asBitmap) {
                 bitmap = getBitmap(photoToLoad.bytes);
                 Base64Utils.Base64Encoder encoder = new Base64Utils.Base64Encoder();
@@ -727,13 +470,6 @@ public class Fresco {
             this.photoToLoad = photoToLoad;
         }
 
-        /*public Displacer(List<Object> _urls, Bitmap bitmap, PhotoToLoad photoToLoad, LoadImage _loadImage, ConnectionErrors _connectionErrors) {
-            this.bitmap = bitmap;
-            this.photoToLoad = photoToLoad;
-            this.loadImage = _loadImage;
-            connectionErrors = _connectionErrors;
-            urls = _urls;
-        }*/
 
         @Override
         public void run() {
