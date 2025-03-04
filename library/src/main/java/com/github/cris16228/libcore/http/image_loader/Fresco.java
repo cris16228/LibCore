@@ -52,6 +52,7 @@ public class Fresco {
     private FileUtils fileUtils;
     private Context context;
     private boolean asBitmap = false;
+    private ImageView finalImageView;
     private Handler handler;
     private String url;
     private HashMap<String, String> params;
@@ -358,7 +359,7 @@ public class Fresco {
         loadingTasks.clear();
     }
 
-    /*public void loadFileThumbnail(Uri uri, ImageView imageView, LoadImage loadImage, FileType fileType) {
+    public Fresco loadFileThumbnail(Uri uri, ImageView imageView, LoadImage loadImage, FileType fileType) {
         cancelLoadingTask(uri);
         try {
             imageView.setImageBitmap(null);
@@ -377,11 +378,12 @@ public class Fresco {
             } else {
                 Log.d("loadFileThumbnail", "Thumbnail not found in memory cache for URI: " + uri);
                 imageViews.put(imageView, uri.getPath());
-                queuePhoto(uri.getPath(), imageView, loadImage, fileType);
+                queuePhoto(uri.getPath(), imageView);
             }
         });
         loadingTasks.put(uri, loadingTask);
-    }*/
+        return this;
+    }
 
     public Bitmap getFileThumbnail(Uri uri, FileType fileType) {
         if (fileType == FileType.VIDEO)
@@ -463,8 +465,6 @@ public class Fresco {
                 e.printStackTrace();
             }
         }
-
-        Log.d(getClass().getName(), "file is " + file.exists() + "\n" + file.length());
         return fileUtils.decodeFile(file);
     }
 
