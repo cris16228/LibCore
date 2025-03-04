@@ -90,16 +90,13 @@ public class Fresco {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
         Bitmap bitmap = memoryCache.get(url);
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                if (bitmap != null) {
-                    imageView.setImageBitmap(bitmap);
-                    imageView.invalidate();
-                } else {
-                    imageViews.put(new WeakReference<>(imageView), url);
-                    queuePhoto(url, imageView/*, loadImage, connectionErrors, downloadProgress*/);
-                }
+        handler.post(() -> {
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+                imageView.invalidate();
+            } else {
+                imageViews.put(new WeakReference<>(imageView), url);
+                queuePhoto(url, imageView);
             }
         });
         return this;
