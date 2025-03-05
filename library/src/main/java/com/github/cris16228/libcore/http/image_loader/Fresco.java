@@ -89,15 +89,17 @@ public class Fresco {
     public Fresco into(ImageView imageView) {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
-        Bitmap bitmap = memoryCache.get(url);
-        handler.post(() -> {
-            if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
-            } else {
-                imageViews.put(new WeakReference<>(imageView), url);
-                queuePhoto(url, imageView);
-            }
+        executor.execute(() -> {
+            Bitmap bitmap = memoryCache.get(url);
+            handler.post(() -> {
+                if (bitmap != null) {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.invalidate();
+                } else {
+                    imageViews.put(new WeakReference<>(imageView), url);
+                    queuePhoto(url, imageView);
+                }
+            });
         });
         return this;
     }
@@ -111,6 +113,7 @@ public class Fresco {
         PhotoToLoad photoToLoad = new PhotoToLoad(url, imageView);
         executor.submit(new PhotoLoader(photoToLoad));
     }
+
     private void cancelLoadingTask(Uri uri) {
         Future<?> loadingTask = loadingTasks.get(uri);
         if (loadingTask != null) {
@@ -422,7 +425,6 @@ public class Fresco {
         private final HashMap<String, String> params;
 
 
-
         public PhotoLoader(PhotoToLoad photoToLoad) {
             this.photoToLoad = photoToLoad;
             params = new HashMap<>();
@@ -477,6 +479,8 @@ public class Fresco {
                     if (photoToLoad.imageView != null) {
                         if (loadImage != null)
                             loadImage.onSuccess(bitmap);
+                        photoToLoad.imageView.setImageBitmap(bitmap);
+                        photoToLoad.imageView.invalidate();
                     }
                 } else {
                     if (loadImage != null)
