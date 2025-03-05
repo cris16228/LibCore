@@ -47,7 +47,7 @@ public class MemoryCache {
         limit = _limit;
     }
 
-    public Bitmap get(String id) {
+    public synchronized Bitmap get(String id) {
         if (StringUtils.isEmpty(path)) return null;
         try {
             id = URLEncoder.encode(id, "UTF-8");
@@ -94,7 +94,7 @@ public class MemoryCache {
         return inSampleSize;
     }
 
-    public void put(String id, Bitmap bitmap, boolean isLocal, boolean saveInCache) {
+    public synchronized void put(String id, Bitmap bitmap, boolean isLocal, boolean saveInCache) {
         try {
             if (isLocal) {
                 File file = new File(id);
@@ -116,7 +116,7 @@ public class MemoryCache {
         }
     }
 
-    public void put(String id, Bitmap bitmap) {
+    public synchronized void put(String id, Bitmap bitmap) {
         put(id, bitmap, false, true);
     }
 
