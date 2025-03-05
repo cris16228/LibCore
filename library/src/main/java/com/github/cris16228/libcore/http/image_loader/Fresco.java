@@ -57,10 +57,9 @@ public class Fresco {
     private boolean asBitmap = false;
     private ImageView finalImageView;
     private Handler handler;
-    private String url;
+    private String urlPath;
     private final HashMap<String, String> params = new HashMap<>();
     private LoadImage loadImage;
-    String path;
     private int width;
     private int height;
 
@@ -82,7 +81,7 @@ public class Fresco {
     }
 
     public Fresco load(String url) {
-        this.url = url;
+        this.urlPath = url;
         return this;
     }
 
@@ -95,25 +94,24 @@ public class Fresco {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
         executor.execute(() -> {
-            Bitmap bitmap = memoryCache.get(url);
+            Bitmap bitmap = memoryCache.get(urlPath);
             handler.post(() -> {
                 if (bitmap != null) {
                     imageView.setImageBitmap(bitmap);
                     imageView.invalidate();
                 } else {
-                    imageViews.put(new WeakReference<>(imageView), url);
-                    queuePhoto(url, imageView);
+                    imageViews.put(new WeakReference<>(imageView), urlPath);
+                    queuePhoto(urlPath, imageView);
                 }
             });
         });
         return this;
     }
 
-    public Bitmap decode(String path) {
-        this.path = path;
+    public Bitmap decode() {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(path, options);
+        BitmapFactory.decodeFile(urlPath, options);
 
         options.inSampleSize = calculateInSampleSize(options, width, height);
         options.inJustDecodeBounds = false;
@@ -121,7 +119,7 @@ public class Fresco {
         options.inPreferredConfig = Bitmap.Config.RGB_565;
         options.inBitmap = Bitmap.createBitmap(options.outWidth, options.outHeight, Bitmap.Config.RGB_565);
 
-        return BitmapFactory.decodeFile(path, options);
+        return BitmapFactory.decodeFile(urlPath, options);
     }
 
     public Fresco size(@NonNull String size) {
@@ -135,7 +133,7 @@ public class Fresco {
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(path, options);
+        BitmapFactory.decodeFile(urlPath, options);
         int originalWidth = options.outWidth;
         int originalHeight = options.outHeight;
 
