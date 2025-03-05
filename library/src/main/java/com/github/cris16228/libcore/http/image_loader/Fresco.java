@@ -12,6 +12,8 @@ import android.util.Base64;
 import android.util.Log;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+
 import com.github.cris16228.libcore.Base64Utils;
 import com.github.cris16228.libcore.FileUtils;
 import com.github.cris16228.libcore.http.image_loader.interfaces.ConnectionErrors;
@@ -58,6 +60,9 @@ public class Fresco {
     private String url;
     private final HashMap<String, String> params = new HashMap<>();
     private LoadImage loadImage;
+    String path;
+    private int width;
+    private int height;
 
 
     public static Fresco with(Context context) {
@@ -101,6 +106,56 @@ public class Fresco {
                 }
             });
         });
+        return this;
+    }
+
+    public Bitmap decode(String path) {
+        this.path = path;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, options);
+
+        options.inSampleSize = calculateInSampleSize(options, width, height);
+        options.inJustDecodeBounds = false;
+        options.inMutable = true;
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        options.inBitmap = Bitmap.createBitmap(options.outWidth, options.outHeight, Bitmap.Config.RGB_565);
+
+        return BitmapFactory.decodeFile(path, options);
+    }
+
+    public Fresco size(@NonNull String size) {
+        if (!size.contains("x")) {
+            return null;
+        }
+        String[] sizes = size.split("x");
+        if (sizes.length != 2) {
+            return null;
+        }
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, options);
+        int originalWidth = options.outWidth;
+        int originalHeight = options.outHeight;
+
+        if (originalWidth <= 0 || originalHeight <= 0) {
+            return null;
+        }
+        if (sizes[0].equals("?") && sizes[1].equals("?")) {
+            throw new IllegalArgumentException("You must specify either the width or the height");
+        }
+
+        if (sizes[0].equals("?")) {
+            height = Integer.parseInt(sizes[1]);
+            width = (int) ((height / (float) originalHeight) * originalWidth);
+        } else if (sizes[1].equals("?")) {
+            width = Integer.parseInt(sizes[0]);
+            height = (int) ((width / (float) originalWidth) * originalHeight);
+        } else {
+            width = Integer.parseInt(sizes[0]);
+            height = Integer.parseInt(sizes[1]);
+        }
         return this;
     }
 
