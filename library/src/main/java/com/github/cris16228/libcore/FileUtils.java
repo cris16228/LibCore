@@ -78,27 +78,33 @@ public class FileUtils {
     }
 
     public Bitmap decodeFile(File file) {
-        try {
+        if (file == null || !file.exists()) return null;
+        try (FileInputStream fis = new FileInputStream(file)) {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(new FileInputStream(file), null, options);
-            int width_tmp = options.outWidth, height_tmp = options.outHeight;
+            BitmapFactory.decodeStream(fis, null, options);
+            int originalWidth = options.outWidth;
+            int originalHeight = options.outHeight;
+            if (originalWidth <= 0 || originalHeight <= 0) return null;
+
             int scale = 1;
-            int final_width, final_height;
-            final_width = width_tmp /= 2;
-            final_height = height_tmp /= 2;
-            while (width_tmp / 2 >= final_width && height_tmp / 2 >= final_height) {
-                width_tmp /= 2;
-                height_tmp /= 2;
+            int targetSize = 1024;
+            while (originalWidth / 2 > targetSize && originalHeight / 2 > targetSize) {
+                originalWidth /= 2;
+                originalHeight /= 2;
                 scale *= 2;
             }
-            BitmapFactory.Options _options = new BitmapFactory.Options();
-            _options.inSampleSize = scale;
-            System.out.println("Scale: " + scale);
-            return BitmapFactory.decodeStream(new FileInputStream(file), null, _options);
-        } catch (FileNotFoundException exception) {
+            options.inSampleSize = scale;
+            options.inJustDecodeBounds = false;
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            try (FileInputStream fileInputStream = new FileInputStream(file)) {
+                BitmapFactory.decodeStream(fileInputStream, null, options);
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
             return null;
         }
+        return null;
     }
 
     public void addToMediaStore(Context context, String path) {
@@ -175,25 +181,31 @@ public class FileUtils {
 
     public void copyStream(InputStream is, OutputStream os, int contentLength, Fresco.DownloadProgress downloadProgress) {
         try {
-            byte[] data = new byte[33554432];
+            byte[] buffer = new byte[8192];
             int count;
             long progress = 0;
-            while ((count = is.read(data, 0, data.length)) != -1) {
+            while ((count = is.read(buffer)) != -1) {
+                os.write(buffer, 0, count);
                 progress += count;
-                os.write(data, 0, count);
-                if (contentLength > 0) {
+                /*if (contentLength > 0) {
                     if (downloadProgress != null) {
                         downloadProgress.downloadInProgress(progress, contentLength);
                     }
-                }
+                }*/
             }
-            if (downloadProgress != null) {
+            os.flush();
+            /*if (downloadProgress != null) {
                 downloadProgress.downloadComplete();
-            }
-            is.close();
-            os.close();
+            }*/
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                is.close();
+                os.close();
+            } catch (IOException ignored) {
+
+            }
         }
     }
 

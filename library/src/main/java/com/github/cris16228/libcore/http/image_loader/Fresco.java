@@ -369,9 +369,13 @@ public class Fresco {
 
     private Bitmap getBitmap(String url) {
         File file = fileCache.getFile(url);
-        Bitmap _image = fileUtils.decodeFile(file);
-        if (_image != null)
-            return _image;
+        if (file.exists() && file.length() > 0) {
+            Bitmap _image = fileUtils.decodeFile(file);
+            if (_image != null) {
+                return _image;
+            }
+        }
+        File tempFile = new File(file.getAbsolutePath() + ".tmp");
         try {
             Bitmap _webImage;
             URL imageURL = new URL(url);
@@ -386,15 +390,25 @@ public class Fresco {
             connection.setInstanceFollowRedirects(true);
             connection.setRequestProperty("Accept-Encoding", "identity");
             InputStream is = new BufferedInputStream(connection.getInputStream());
-            OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(tempFile));
             /*if (downloadProgress != null) {
                 fileUtils.copyStream(is, os, connection.getContentLength(), downloadProgress);
             } else {*/
             fileUtils.copyStream(is, os, connection.getContentLength());
             /*}*/
-            connection.disconnect();
+            os.flush();
             os.close();
             is.close();
+            connection.disconnect();
+            if (tempFile.length() > 0) {
+                if (!tempFile.renameTo(file)) {
+                    tempFile.delete();
+                    return null;
+                }
+            } else {
+                tempFile.delete();
+                return null;
+            }
             _webImage = fileUtils.decodeFile(file);
             return _webImage;
         } catch (OutOfMemoryError outOfMemoryError) {
@@ -407,7 +421,8 @@ public class Fresco {
             /*if (connectionErrors != null)
                 connectionErrors.FileNotFound(url);*/
             return null;
-        } catch (IOException ioException) {
+        } catch (Exception e) {
+            tempFile.delete();
             /*if (connectionErrors != null)
                 connectionErrors.NormalError();*/
             return null;
