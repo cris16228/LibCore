@@ -260,7 +260,7 @@ public class Fresco {
                 if (thumbnail != null) {
                     InputStream is = bitmapToInputStream(thumbnail);
                     outputStream = Files.newOutputStream(file.toPath());
-                    fileUtils.copyStream(is, outputStream, is.available());
+                    fileUtils.copyStream(is, outputStream);
                     is.close();
                     outputStream.close();
                     if (targetWidth < 100 && targetHeight < 100)
@@ -343,7 +343,7 @@ public class Fresco {
             assert thumbnail != null;
             InputStream is = bitmapToInputStream(thumbnail);
             OutputStream os = Files.newOutputStream(file.toPath());
-            fileUtils.copyStream(is, os, is.available());
+            fileUtils.copyStream(is, os);
             is.close();
             os.close();
         } catch (Exception e) {
@@ -382,7 +382,7 @@ public class Fresco {
             connection.setRequestProperty("Accept-Encoding", "identity");
             InputStream is = new BufferedInputStream(connection.getInputStream());
             OutputStream os = new BufferedOutputStream(new FileOutputStream(tempFile));
-            fileUtils.copyStream(is, os, connection.getContentLength());
+            fileUtils.copyStream(is, os);
             /*}*/
             os.flush();
             os.close();
