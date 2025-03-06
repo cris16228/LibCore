@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 
 import com.github.cris16228.libcore.Base64Utils;
 import com.github.cris16228.libcore.FileUtils;
-import com.github.cris16228.libcore.http.image_loader.interfaces.ConnectionErrors;
 import com.github.cris16228.libcore.http.image_loader.interfaces.LoadImage;
 
 import java.io.BufferedInputStream;
@@ -36,9 +35,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,7 +52,6 @@ public class Fresco {
     private FileUtils fileUtils;
     private Context context;
     private boolean asBitmap = false;
-    private ImageView finalImageView;
     private Handler handler;
     private String urlPath;
     private final HashMap<String, String> params = new HashMap<>();
@@ -93,6 +89,7 @@ public class Fresco {
     public Fresco into(ImageView imageView) {
         imageView.setImageBitmap(null);
         imageView.setImageDrawable(null);
+        imageView.setTag(urlPath);
         executor.execute(() -> {
             Bitmap bitmap = memoryCache.get(urlPath);
             handler.post(() -> {
@@ -301,11 +298,9 @@ public class Fresco {
         int targetWidth = (int) (width * scalePercent);
         int targetHeight = (int) (height * scalePercent);
 
-        // Create a matrix for the scaling and translate
         Matrix matrix = new Matrix();
         matrix.postScale(scalePercent, scalePercent);
 
-        // Recreate the new bitmap
         return Bitmap.createBitmap(bitmap, 0, 0, targetWidth, targetHeight, matrix, true);
     }
 
@@ -318,9 +313,6 @@ public class Fresco {
         if (height > reqHeight || width > reqWidth) {
             final int halfHeight = height / 2;
             final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
             while ((halfHeight / inSampleSize) >= reqHeight
                     && (halfWidth / inSampleSize) >= reqWidth) {
                 inSampleSize *= 2;
@@ -347,7 +339,6 @@ public class Fresco {
             Bitmap _image = fileUtils.decodeFile(file);
             if (_image != null)
                 return _image;
-            long randomTimeMicroseconds = (long) (new Random().nextInt(10000) + 5000) * 1000;
             thumbnail = retriever.getFrameAtTime(5000000);
             assert thumbnail != null;
             InputStream is = bitmapToInputStream(thumbnail);
@@ -391,9 +382,6 @@ public class Fresco {
             connection.setRequestProperty("Accept-Encoding", "identity");
             InputStream is = new BufferedInputStream(connection.getInputStream());
             OutputStream os = new BufferedOutputStream(new FileOutputStream(tempFile));
-            /*if (downloadProgress != null) {
-                fileUtils.copyStream(is, os, connection.getContentLength(), downloadProgress);
-            } else {*/
             fileUtils.copyStream(is, os, connection.getContentLength());
             /*}*/
             os.flush();
@@ -439,7 +427,7 @@ public class Fresco {
     }
 
     boolean imageViewReused(PhotoToLoad _photoToLoad) {
-        String tag = imageViews.get(_photoToLoad.imageView);
+        String tag = imageViews.get(new WeakReference<>(_photoToLoad.imageView));
         return tag == null || !tag.equals(_photoToLoad.url);
     }
 
@@ -453,13 +441,6 @@ public class Fresco {
         VIDEO,
         IMAGE,
         OTHER
-    }
-
-    public interface DownloadProgress {
-
-        void downloadInProgress(Long progress, long total);
-
-        void downloadComplete();
     }
 
     static class PhotoToLoad {
@@ -484,18 +465,11 @@ public class Fresco {
 
     class PhotoLoader implements Runnable {
 
-        public List<Object> urls;
         PhotoToLoad photoToLoad;
-        ConnectionErrors connectionErrors;
-        DownloadProgress downloadProgress;
         private Bitmap bitmap;
-        private boolean local;
-        private final HashMap<String, String> params;
-
 
         public PhotoLoader(PhotoToLoad photoToLoad) {
             this.photoToLoad = photoToLoad;
-            params = new HashMap<>();
         }
 
         @Override
@@ -504,33 +478,21 @@ public class Fresco {
                 bitmap.recycle();
                 bitmap = null;
             }
-            if (asBitmap) {
-                bitmap = getBitmap(photoToLoad.bytes);
-                Base64Utils.Base64Encoder encoder = new Base64Utils.Base64Encoder();
-                String bytes = encoder.encrypt(Arrays.toString(photoToLoad.bytes), Base64.NO_WRAP, null);
-                memoryCache.put(bytes, bitmap);
-            } else {
-                bitmap = getBitmap(photoToLoad.url);
-                if (bitmap != null) {
-                    memoryCache.put(photoToLoad.url, bitmap);
-                }
+            bitmap = getBitmap(photoToLoad.url);
+            if (bitmap != null) {
+                memoryCache.put(photoToLoad.url, bitmap);
             }
 
-        /*if (imageViewReused(photoToLoad))
-            return;*/
             Displacer displacer = new Displacer(bitmap, photoToLoad);
             executor.execute(displacer);
-            photoToLoad.imageView.invalidate();
         }
     }
 
     public class Displacer implements Runnable {
 
-        public List<Object> urls;
         Bitmap bitmap;
         PhotoToLoad photoToLoad;
         LoadImage loadImage;
-        ConnectionErrors connectionErrors;
 
         public Displacer(Bitmap bitmap, PhotoToLoad photoToLoad) {
             this.bitmap = bitmap;
@@ -541,12 +503,11 @@ public class Fresco {
         @Override
         public void run() {
             handler.post(() -> {
-                /*if (imageViewReused(photoToLoad))
-                    return;*/
-                if (bitmap != null) {
-                    if (photoToLoad.imageView != null) {
-                        if (loadImage != null)
+                if (bitmap != null && photoToLoad.imageView != null) {
+                    if (photoToLoad.url.equals(photoToLoad.imageView.getTag())) {
+                        if (loadImage != null) {
                             loadImage.onSuccess(bitmap);
+                        }
                         photoToLoad.imageView.setImageBitmap(bitmap);
                         photoToLoad.imageView.invalidate();
                     }
