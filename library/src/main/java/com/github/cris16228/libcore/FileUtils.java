@@ -19,8 +19,6 @@ import android.webkit.MimeTypeMap;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 
-import com.github.cris16228.libcore.http.image_loader.Fresco;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -179,7 +177,7 @@ public class FileUtils {
         return path;
     }
 
-    public void copyStream(InputStream is, OutputStream os, int contentLength, Fresco.DownloadProgress downloadProgress) {
+    public void copyStream(InputStream is, OutputStream os) {
         try {
             byte[] buffer = new byte[8192];
             int count;
@@ -207,10 +205,6 @@ public class FileUtils {
 
             }
         }
-    }
-
-    public void copyStream(InputStream is, OutputStream os, int contentLength) {
-        copyStream(is, os, contentLength, null);
     }
 
     //Get saved base64 Image
