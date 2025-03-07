@@ -492,7 +492,6 @@ public class Fresco {
 
         Bitmap bitmap;
         PhotoToLoad photoToLoad;
-        LoadImage loadImage;
 
         public Displacer(Bitmap bitmap, PhotoToLoad photoToLoad) {
             this.bitmap = bitmap;
@@ -504,7 +503,9 @@ public class Fresco {
         public void run() {
             handler.post(() -> {
                 if (bitmap != null && photoToLoad.imageView != null) {
+                    System.out.println("Bitmap is not null, photoToLoad.imageView is not null");
                     if (photoToLoad.url.equals(photoToLoad.imageView.getTag())) {
+                        System.out.println(photoToLoad.url + " / " + photoToLoad.imageView.getTag());
                         if (loadImage != null) {
                             loadImage.onSuccess(bitmap);
                         }
