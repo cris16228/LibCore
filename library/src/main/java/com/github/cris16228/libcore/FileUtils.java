@@ -96,13 +96,12 @@ public class FileUtils {
             options.inJustDecodeBounds = false;
             options.inPreferredConfig = Bitmap.Config.RGB_565;
             try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                BitmapFactory.decodeStream(fileInputStream, null, options);
+                return BitmapFactory.decodeStream(fileInputStream, null, options);
             }
         } catch (Exception exception) {
             exception.printStackTrace();
             return null;
         }
-        return null;
     }
 
     public void addToMediaStore(Context context, String path) {
