@@ -320,6 +320,13 @@ public class HttpUtils {
                         output.write(data, 0, count);
                     }
                     output.flush();
+                    output.close();
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            result.append(line);
+                        }
+                    }
                     progressCallback.onFinish(StringUtils.isEmpty(result) ? null : new JSONObject(result.toString()));
                 }
             }
