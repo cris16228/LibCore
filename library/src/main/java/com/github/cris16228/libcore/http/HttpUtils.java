@@ -312,7 +312,7 @@ public class HttpUtils {
                 if (tmpPath != null && !new File(tmpPath).exists()) tmp.getParentFile().mkdirs();
 
                 try (OutputStream output = new BufferedOutputStream(Files.newOutputStream(Paths.get(path)))) {
-                    byte[] data = new byte[16 * 1024]; // Use a larger buffer size for better performance
+                    byte[] data = new byte[16 * 1024];
                     long totalRead = 0;
                     while ((count = input.read(data)) != -1) {
                         totalRead += count;
