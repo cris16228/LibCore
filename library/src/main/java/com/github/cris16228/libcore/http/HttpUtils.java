@@ -316,7 +316,7 @@ public class HttpUtils {
                     long totalRead = 0;
                     while ((count = input.read(data)) != -1) {
                         totalRead += count;
-                        progressCallback.onProgress(totalRead, fileSize, (int) ((totalRead * 100) / fileSize), tmp.getName());
+                        progressCallback.onProgress(totalRead, fileSize, (int) ((totalRead * 100) / fileSize), tmp.getName(), 1);
                         output.write(data, 0, count);
                     }
                     output.flush();
@@ -596,9 +596,9 @@ public class HttpUtils {
                                 uploadedBytes += bytesRead;
                                 chunkBytesUploaded += bytesRead;
                                 if (isSingleFileProgress) {
-                                    progressCallback.onProgress(uploadedBytes, fileSize, (int) ((uploadedBytes * 100) / fileSize), file.getName());
+                                    progressCallback.onProgress(chunkBytesUploaded, fileSize, (int) ((chunkBytesUploaded * 100) / fileSize), file.getName(), i);
                                 } else {
-                                    progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName());
+                                    progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName(), i);
                                 }
                             }
                             dos.writeBytes(lineEnd);
@@ -784,7 +784,7 @@ public class HttpUtils {
     }*/
 
     public interface ProgressCallback {
-        void onProgress(long uploadedBytes, long totalBytes, int percent, String fileName);
+        void onProgress(long uploadedBytes, long totalBytes, int percent, String fileName, int fileIndex);
 
         void onFinish(@Nullable JSONObject jsonObject);
     }
