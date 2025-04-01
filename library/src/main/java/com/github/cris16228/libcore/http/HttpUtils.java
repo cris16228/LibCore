@@ -536,7 +536,7 @@ public class HttpUtils {
         return uploadFiles(_url, params, files, "");
     }
 
-    public JSONObject uploadFiles(String _url, HashMap<String, Object> params, HashMap<String, String[]> files, String bearer, boolean isSingleFileProgress, ProgressCallback progressCallback) {
+    /*public JSONObject uploadFiles(String _url, HashMap<String, Object> params, HashMap<String, String[]> files, String bearer, boolean isSingleFileProgress, ProgressCallback progressCallback) {
         if (!TextUtils.isEmpty(_url))
             url = _url;
         result = new StringBuilder();
@@ -616,6 +616,127 @@ public class HttpUtils {
                             conn.disconnect();
                             chunkIndex++;
                         }
+                    }
+                }
+            }
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode != HTTP_OK) {
+                BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                String line;
+                while ((line = errorReader.readLine()) != null) {
+                    result.append(line);
+                }
+                Log.e("Error Response", result.toString());
+                return new JSONObject(result.toString());
+            }
+            reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                result.append(line);
+            }
+            progressCallback.onFinish(new JSONObject(result.toString()));
+            return new JSONObject(result.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            try {
+                if (dos != null) dos.close();
+                if (reader != null) reader.close();
+                if (conn != null) conn.disconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }*/
+
+    public JSONObject uploadFiles(String _url, HashMap<String, Object> params, HashMap<String, String[]> files, String bearer, boolean isSingleFileProgress, ProgressCallback progressCallback) {
+        if (TextUtils.isEmpty(_url)) return null;
+        result = new StringBuilder();
+
+        long totalBytes = calculateBytes(files);
+        long uploadedBytes = 0;
+
+        try {
+            for (String key : files.keySet()) {
+                String[] filePaths = files.get(key);
+                if (filePaths != null) {
+                    for (int i = 0; i < filePaths.length; i++) {
+                        File file = new File(filePaths[i]);
+                        long fileSize = file.length();
+                        int chunkIndex = 0;
+                        int totalChunks = (int) Math.ceil((double) fileSize / chunkSize);
+                        FileInputStream fileInputStream = new FileInputStream(file);
+
+                        while (chunkIndex < totalChunks) {
+                            long chunkStart = (long) chunkIndex * chunkSize;
+                            long chunkEnd = Math.min(chunkStart + chunkSize, fileSize);
+                            long chunkToRead = chunkEnd - chunkStart;
+                            /*fileInputStream.skip(chunkStart);*/
+
+                            HttpURLConnection conn = (HttpURLConnection) new URL(_url).openConnection();
+                            conn.setDoInput(true);
+                            conn.setDoOutput(true);
+                            conn.setUseCaches(false);
+                            conn.setRequestMethod("POST");
+                            conn.setRequestProperty("Connection", "Keep-Alive");
+                            conn.setRequestProperty("Accept-Charset", "UTF-8");
+                            conn.setChunkedStreamingMode(256 * 1024);
+                            boundary = "*****" + System.currentTimeMillis() + "*****";
+                            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+                            if (!StringUtils.isEmpty(bearer)) {
+                                conn.addRequestProperty("Authorization", "Bearer " + bearer);
+                            }
+                            conn.setRequestProperty("chunk-index", String.valueOf(chunkIndex));
+                            conn.setRequestProperty("total-chunks", String.valueOf(totalChunks));
+                            conn.setRequestProperty("index", String.valueOf(i));
+                            DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(conn.getOutputStream(), 256 * 1024));
+
+                            if (params != null) {
+                                writeParams(dos, params);
+                            }
+
+                            dos.writeBytes(twoHyphens + boundary + lineEnd);
+                            dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
+                            dos.writeBytes("Content-Type: " + boundary + lineEnd);
+                            dos.writeBytes(lineEnd);
+
+                            byte[] buffer = new byte[256 * 1024];
+                            int bytesRead;
+                            long chunkBytesUploaded = 0;
+
+                            while (chunkBytesUploaded < chunkToRead && (bytesRead = fileInputStream.read(buffer, 0, (int) Math.min(buffer.length, chunkToRead - chunkBytesUploaded))) != -1) {
+                                dos.write(buffer, 0, bytesRead);
+                                dos.flush();
+                                uploadedBytes += bytesRead;
+                                chunkBytesUploaded += bytesRead;
+                                if (isSingleFileProgress) {
+                                    progressCallback.onProgress(chunkBytesUploaded, fileSize, (int) ((chunkBytesUploaded * 100) / fileSize), file.getName(), i);
+                                } else {
+                                    progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName(), i);
+                                }
+                            }
+                            dos.writeBytes(lineEnd);
+                            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+                            dos.flush();
+                            dos.close();
+
+                            int responseCode = conn.getResponseCode();
+                            if (responseCode != HTTP_OK) {
+                                BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                                result = new StringBuilder();
+                                String line;
+                                while ((line = errorReader.readLine()) != null) {
+                                    result.append(line);
+                                }
+                                Log.e("Error Response", result.toString());
+                                return new JSONObject(result.toString());
+                            }
+                            conn.disconnect();
+                            chunkIndex++;
+                        }
+                        fileInputStream.close();
                     }
                 }
             }
