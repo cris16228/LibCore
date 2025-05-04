@@ -735,6 +735,10 @@ public class HttpUtils {
                                 return new JSONObject(result.toString());
                             }
                             reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                result.append(line);
+                            }
                             conn.disconnect();
                             chunkIndex++;
                         }
@@ -753,10 +757,6 @@ public class HttpUtils {
                 return new JSONObject(result.toString());
             }
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                result.append(line);
-            }
             progressCallback.onFinish(new JSONObject(result.toString()));
             return new JSONObject(result.toString());
         } catch (Exception e) {
