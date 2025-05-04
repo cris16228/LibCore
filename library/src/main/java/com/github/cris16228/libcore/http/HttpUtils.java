@@ -657,6 +657,7 @@ public class HttpUtils {
 
         long totalBytes = calculateBytes(files);
         long uploadedBytes = 0;
+        int responseCode = 0;
 
         try {
             for (String key : files.keySet()) {
@@ -722,7 +723,7 @@ public class HttpUtils {
                             dos.flush();
                             dos.close();
 
-                            int responseCode = conn.getResponseCode();
+                            responseCode = conn.getResponseCode();
                             if (responseCode != HTTP_OK) {
                                 BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
                                 result = new StringBuilder();
@@ -733,6 +734,7 @@ public class HttpUtils {
                                 Log.e("Error Response", result.toString());
                                 return new JSONObject(result.toString());
                             }
+                            reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                             conn.disconnect();
                             chunkIndex++;
                         }
@@ -741,7 +743,6 @@ public class HttpUtils {
                 }
             }
 
-            int responseCode = conn.getResponseCode();
             if (responseCode != HTTP_OK) {
                 BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
                 String line;
@@ -751,7 +752,6 @@ public class HttpUtils {
                 Log.e("Error Response", result.toString());
                 return new JSONObject(result.toString());
             }
-            reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
                 result.append(line);
