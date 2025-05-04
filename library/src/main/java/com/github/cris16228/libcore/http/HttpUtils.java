@@ -752,6 +752,7 @@ public class HttpUtils {
                 Log.e("Error Response", result.toString());
                 return new JSONObject(result.toString());
             }
+
             String line;
             while ((line = reader.readLine()) != null) {
                 result.append(line);
