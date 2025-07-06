@@ -2,16 +2,13 @@ package com.github.cris16228.libcore;
 
 import android.app.RecoverableSecurityException;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
@@ -31,8 +28,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -105,41 +100,9 @@ public class FileUtils {
     }
 
     public void addToMediaStore(Context context, String path) {
-        ContentValues values = new ContentValues();
         String mineType = getMimeType(path);
-        values.put(MediaStore.MediaColumns.DISPLAY_NAME, new File(path).getName());
-        values.put(MediaStore.MediaColumns.MIME_TYPE, mineType);
-        values.put(MediaStore.MediaColumns.RELATIVE_PATH, getRelativePath(path));
-
-        Uri externalContentUri;
-        if (mineType.startsWith("image/")) {
-            externalContentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        } else if (mineType.startsWith("video/")) {
-            externalContentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-        } else if (mineType.startsWith("audio/")) {
-            externalContentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        } else {
-            return;
-        }
-        ContentResolver resolver = context.getContentResolver();
-        String selection = MediaStore.MediaColumns.DATA + "=?";
-        String[] selectionArgs = new String[]{path};
-        try (Cursor cursor = resolver.query(externalContentUri, new String[]{MediaStore.MediaColumns._ID}, selection, selectionArgs, null)) {
-            if (cursor != null && cursor.getCount() == 0) {
-                Uri uri = resolver.insert(externalContentUri, values);
-                if (uri != null) {
-                    try (OutputStream outputStream = resolver.openOutputStream(uri)) {
-                        if (outputStream != null) {
-                            Files.copy(Paths.get(path), outputStream);
-                            outputStream.flush();
-                            Log.d("MediaStore", "File added successfully: " + uri);
-                            scanMediaStore(context, path, mineType);
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+        if (mineType.startsWith("image/") || mineType.startsWith("video/") || mineType.startsWith("audio/")) {
+            scanMediaStore(context, path, mineType);
         }
     }
 
