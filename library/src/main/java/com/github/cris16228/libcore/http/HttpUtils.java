@@ -699,7 +699,9 @@ public class HttpUtils {
                             }
 
                             dos.writeBytes(twoHyphens + boundary + lineEnd);
+                            Log.d("Uploader", "Sending part with name=" + key);
                             dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
+                            Log.d("Uploader2", "Sending part with name=" + key);
                             String mimeType = URLConnection.guessContentTypeFromName(file.getName());
                             if (mimeType == null) mimeType = "application/octet-stream";
                             dos.writeBytes("Content-Type: " + mimeType + lineEnd);
@@ -720,10 +722,6 @@ public class HttpUtils {
                                     progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName(), i);
                                 }
                             }
-                            dos.writeBytes(lineEnd);
-                            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-                            dos.flush();
-                            dos.close();
                             responseCode = conn.getResponseCode();
                             if (responseCode != HTTP_OK) {
                                 BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
@@ -743,6 +741,10 @@ public class HttpUtils {
                             conn.disconnect();
                             chunkIndex++;
                         }
+                        dos.writeBytes(lineEnd);
+                        dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+                        dos.flush();
+                        dos.close();
                         fileInputStream.close();
                     }
                 }
