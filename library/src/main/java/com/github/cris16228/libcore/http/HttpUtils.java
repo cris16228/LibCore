@@ -722,6 +722,10 @@ public class HttpUtils {
                                     progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName(), i);
                                 }
                             }
+                            dos.writeBytes(lineEnd);
+                            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+                            dos.flush();
+                            dos.close();
                             responseCode = conn.getResponseCode();
                             if (responseCode != HTTP_OK) {
                                 BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
@@ -741,10 +745,7 @@ public class HttpUtils {
                             conn.disconnect();
                             chunkIndex++;
                         }
-                        dos.writeBytes(lineEnd);
-                        dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-                        dos.flush();
-                        dos.close();
+
                         fileInputStream.close();
                     }
                 }
