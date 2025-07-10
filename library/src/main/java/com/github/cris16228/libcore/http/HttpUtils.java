@@ -700,7 +700,9 @@ public class HttpUtils {
 
                             dos.writeBytes(twoHyphens + boundary + lineEnd);
                             dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
-                            dos.writeBytes("Content-Type: " + boundary + lineEnd);
+                            String mimeType = URLConnection.guessContentTypeFromName(file.getName());
+                            if (mimeType == null) mimeType = "application/octet-stream";
+                            dos.writeBytes("Content-Type: " + mimeType + lineEnd);
                             dos.writeBytes(lineEnd);
 
                             byte[] buffer = new byte[256 * 1024];
