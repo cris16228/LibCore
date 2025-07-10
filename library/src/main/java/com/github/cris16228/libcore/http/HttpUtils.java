@@ -720,10 +720,6 @@ public class HttpUtils {
                                     progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName(), i);
                                 }
                             }
-                            dos.writeBytes(lineEnd);
-                            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-                            dos.flush();
-                            dos.close();
 
                             responseCode = conn.getResponseCode();
                             if (responseCode != HTTP_OK) {
@@ -746,6 +742,10 @@ public class HttpUtils {
                         }
                         fileInputStream.close();
                     }
+                    /*dos.writeBytes(lineEnd);
+                    dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+                    dos.flush();
+                    dos.close();*/
                 }
             }
 
