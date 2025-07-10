@@ -723,7 +723,7 @@ public class HttpUtils {
                                 }
                             }
                             dos.writeBytes(lineEnd);
-                            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+                            dos.writeBytes("\r\n--" + boundary + "--\r\n");   // <-- terminator once
                             dos.flush();
                             dos.close();
                             responseCode = conn.getResponseCode();
