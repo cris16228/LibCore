@@ -675,6 +675,8 @@ public class HttpUtils {
                             long chunkEnd = Math.min(chunkStart + chunkSize, fileSize);
                             long chunkToRead = chunkEnd - chunkStart;
                             /*fileInputStream.skip(chunkStart);*/
+                            String mimeType = URLConnection.guessContentTypeFromName(file.getName());
+                            if (mimeType == null) mimeType = "application/octet-stream";
 
                             HttpURLConnection conn = (HttpURLConnection) new URL(_url).openConnection();
                             conn.setDoInput(true);
@@ -683,7 +685,10 @@ public class HttpUtils {
                             conn.setRequestMethod("POST");
                             conn.setRequestProperty("Connection", "Keep-Alive");
                             conn.setRequestProperty("Accept-Charset", "UTF-8");
-                            conn.setChunkedStreamingMode(256 * 1024);
+                            String boundaryHeader = twoHyphens + boundary + lineEnd + "Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd + "Content-Type: " + mimeType + lineEnd + lineEnd;
+                            String boundaryFooter = lineEnd + twoHyphens + boundary + twoHyphens + lineEnd;
+                            long contentLength = boundaryHeader.getBytes(StandardCharsets.UTF_8).length + chunkToRead + boundaryFooter.getBytes(StandardCharsets.UTF_8).length;
+                            conn.setFixedLengthStreamingMode(contentLength);
                             boundary = "*****" + System.currentTimeMillis() + "*****";
                             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                             if (!StringUtils.isEmpty(bearer)) {
@@ -702,8 +707,6 @@ public class HttpUtils {
                             Log.d("Uploader", "Sending part with name=" + key);
                             dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
                             Log.d("Uploader2", "Sending part with name=" + key);
-                            String mimeType = URLConnection.guessContentTypeFromName(file.getName());
-                            if (mimeType == null) mimeType = "application/octet-stream";
                             dos.writeBytes("Content-Type: " + mimeType + lineEnd);
                             dos.writeBytes(lineEnd);
 
@@ -865,7 +868,7 @@ public class HttpUtils {
                     dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "[]\"" + lineEnd);
                     dos.writeBytes("Content-Type: text/plain; charset=UTF-8" + lineEnd);
                     dos.writeBytes(lineEnd);
-                    dos.writeBytes(value + lineEnd);
+                    dos.writeBytes(val + lineEnd);
                 }
                 dos.writeBytes(lineEnd);
             }
