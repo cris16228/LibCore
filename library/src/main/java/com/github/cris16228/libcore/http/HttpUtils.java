@@ -693,6 +693,7 @@ public class HttpUtils {
                             writeParams(tempDos, params);
                             tempDos.flush();
                             tempDos.close();
+
                             byte[] paramsBytes = paramStream.toByteArray();
                             long contentLength = paramsBytes.length + boundaryHeader.getBytes(StandardCharsets.UTF_8).length + chunkToRead + boundaryFooter.getBytes(StandardCharsets.UTF_8).length;
                             conn.setFixedLengthStreamingMode(contentLength);
