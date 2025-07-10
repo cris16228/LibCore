@@ -686,6 +686,8 @@ public class HttpUtils {
                             conn.setRequestMethod("POST");
                             conn.setRequestProperty("Connection", "Keep-Alive");
                             conn.setRequestProperty("Accept-Charset", "UTF-8");
+
+                            boundary = "*****" + System.currentTimeMillis() + "*****";
                             String boundaryHeader = twoHyphens + boundary + lineEnd + "Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd + "Content-Type: " + mimeType + lineEnd + lineEnd;
                             String boundaryFooter = lineEnd + twoHyphens + boundary + twoHyphens + lineEnd;
                             ByteArrayOutputStream paramStream = new ByteArrayOutputStream();
@@ -693,11 +695,9 @@ public class HttpUtils {
                             writeParams(tempDos, params);
                             tempDos.flush();
                             tempDos.close();
-
                             byte[] paramsBytes = paramStream.toByteArray();
                             long contentLength = paramsBytes.length + boundaryHeader.getBytes(StandardCharsets.UTF_8).length + chunkToRead + boundaryFooter.getBytes(StandardCharsets.UTF_8).length;
                             conn.setFixedLengthStreamingMode(contentLength);
-                            boundary = "*****" + System.currentTimeMillis() + "*****";
                             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                             if (!StringUtils.isEmpty(bearer)) {
                                 conn.addRequestProperty("Authorization", "Bearer " + bearer);
