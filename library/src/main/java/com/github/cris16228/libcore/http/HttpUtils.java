@@ -48,15 +48,16 @@ public class HttpUtils {
     String twoHyphens = "--";
     String boundary = "*****";
     String TAG = getClass().getSimpleName();
+    BufferedReader reader;
     private StringBuilder result;
     private int readTimeout = 10000;
-    BufferedReader reader;
     private int connectionTimeout = 15000;
     private HttpURLConnection conn;
     private DataOutputStream dos;
     private JSONObject jsonObject;
     private boolean debug;
     private long chunkSize;
+    private List<String> cookies = new ArrayList<>();
 
     public static HttpUtils get() {
         HttpUtils httpUtils = new HttpUtils();
@@ -75,8 +76,6 @@ public class HttpUtils {
         httpUtils.chunkSize = chunkSize;
         return httpUtils;
     }
-
-    private List<String> cookies = new ArrayList<>();
 
     public String get(String urlString, Map<String, String> headers) {
         HttpURLConnection urlConnection;
@@ -711,12 +710,7 @@ public class HttpUtils {
                                 writeParams(dos, params);
                             }
 
-                            dos.writeBytes(twoHyphens + boundary + lineEnd);
-                            Log.d("Uploader", "Sending part with name=" + key);
-                            dos.writeBytes("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd);
-                            Log.d("Uploader2", "Sending part with name=" + key);
-                            dos.writeBytes("Content-Type: " + mimeType + lineEnd);
-                            dos.writeBytes(lineEnd);
+                            dos.writeBytes(boundaryHeader);
 
                             byte[] buffer = new byte[256 * 1024];
                             int bytesRead;
@@ -733,8 +727,7 @@ public class HttpUtils {
                                     progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName(), i);
                                 }
                             }
-                            dos.writeBytes(lineEnd);
-                            dos.writeBytes("\r\n--" + boundary + "--\r\n");   // <-- terminator once
+                            dos.writeBytes(boundaryFooter);
                             dos.flush();
                             dos.close();
                             responseCode = conn.getResponseCode();
@@ -919,12 +912,6 @@ public class HttpUtils {
         }
     }*/
 
-    public interface ProgressCallback {
-        void onProgress(long uploadedBytes, long totalBytes, int percent, String fileName, int fileIndex);
-
-        void onFinish(@Nullable JSONObject jsonObject);
-    }
-
     public int getReadTimeout() {
         return 0;
     }
@@ -956,5 +943,11 @@ public class HttpUtils {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public interface ProgressCallback {
+        void onProgress(long uploadedBytes, long totalBytes, int percent, String fileName, int fileIndex);
+
+        void onFinish(@Nullable JSONObject jsonObject);
     }
 }
