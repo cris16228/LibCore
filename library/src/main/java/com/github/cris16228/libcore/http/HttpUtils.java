@@ -751,6 +751,7 @@ public class HttpUtils {
                         }
 
                         fileInputStream.close();
+                        progressCallback.onSingleMediaProcessed(filePaths[i]);
                     }
                 }
             }
@@ -947,6 +948,8 @@ public class HttpUtils {
 
     public interface ProgressCallback {
         void onProgress(long uploadedBytes, long totalBytes, int percent, String fileName, int fileIndex);
+
+        void onSingleMediaProcessed(String filePath);
 
         void onFinish(@Nullable JSONObject jsonObject);
     }
