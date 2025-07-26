@@ -14,30 +14,49 @@ import androidx.fragment.app.FragmentTransaction;
 public class FragmentUtils {
 
     FragmentActivity fragmentActivity;
+    FragmentTransaction transaction;
+    FragmentManager fragmentManager;
 
     public static FragmentUtils with(FragmentActivity _fragmentActivity) {
         FragmentUtils fragmentUtils = new FragmentUtils();
+        fragmentUtils.fragmentManager = _fragmentActivity.getSupportFragmentManager();
         fragmentUtils.fragmentActivity = _fragmentActivity;
+        fragmentUtils.transaction = fragmentUtils.fragmentManager.beginTransaction();
         return fragmentUtils;
     }
 
-    public void showHide(int showFragment, int hideFragment, Fragment addFragment, Bundle bundle) {
-        FragmentManager fragmentManager = fragmentActivity.getSupportFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
+    public FragmentUtils show(int showFragment) {
+        Fragment fragment = fragmentManager.findFragmentById(showFragment);
+        if (fragment != null) {
+            transaction.show(fragment);
+        }
+        return this;
+    }
+
+    public FragmentUtils hide(int hideFragment) {
         Fragment fragment = fragmentManager.findFragmentById(hideFragment);
         if (fragment != null) {
             transaction.hide(fragment);
         }
+        return this;
+    }
+
+    public FragmentUtils add(int fragmentID, Fragment addFragment, Bundle bundle) {
         if (bundle != null) {
             addFragment.setArguments(bundle);
         }
-        transaction.add(showFragment, addFragment);
+        transaction.add(fragmentID, addFragment);
         transaction.addToBackStack(addFragment.getClass().getSimpleName().toLowerCase());
-        transaction.commit();
+        return this;
     }
 
-    public void showHide(int showFragment, int hideFragment, Fragment addFragment) {
-        showHide(showFragment, hideFragment, addFragment, null);
+    public FragmentUtils add(int fragmentID, Fragment addFragment) {
+        add(fragmentID, addFragment, null);
+        return this;
+    }
+
+    public void build() {
+        transaction.commit();
     }
 
     public void replace(@IdRes int containerViewId, @NonNull Fragment fragment) {
