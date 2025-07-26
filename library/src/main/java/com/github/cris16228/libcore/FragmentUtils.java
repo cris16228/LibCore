@@ -1,5 +1,7 @@
 package com.github.cris16228.libcore;
 
+import android.os.Bundle;
+
 import androidx.annotation.AnimRes;
 import androidx.annotation.AnimatorRes;
 import androidx.annotation.IdRes;
@@ -17,6 +19,25 @@ public class FragmentUtils {
         FragmentUtils fragmentUtils = new FragmentUtils();
         fragmentUtils.fragmentActivity = _fragmentActivity;
         return fragmentUtils;
+    }
+
+    public void showHide(int showFragment, int hideFragment, Fragment addFragment, Bundle bundle) {
+        FragmentManager fragmentManager = fragmentActivity.getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        Fragment fragment = fragmentManager.findFragmentById(hideFragment);
+        if (fragment != null) {
+            transaction.hide(fragment);
+        }
+        if (bundle != null) {
+            addFragment.setArguments(bundle);
+        }
+        transaction.add(showFragment, addFragment);
+        transaction.addToBackStack(addFragment.getClass().getSimpleName().toLowerCase());
+        transaction.commit();
+    }
+
+    public void showHide(int showFragment, int hideFragment, Fragment addFragment) {
+        showHide(showFragment, hideFragment, addFragment, null);
     }
 
     public void replace(@IdRes int containerViewId, @NonNull Fragment fragment) {
