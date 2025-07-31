@@ -50,8 +50,22 @@ public class FragmentUtils {
         return this;
     }
 
-    public FragmentUtils add(int fragmentID, Fragment addFragment) {
-        add(fragmentID, addFragment, null);
+    public FragmentUtils replace(int fragmentID, Fragment addFragment, Bundle bundle) {
+        if (bundle != null) {
+            addFragment.setArguments(bundle);
+        }
+        transaction.replace(fragmentID, addFragment);
+        transaction.addToBackStack(addFragment.getClass().getSimpleName().toLowerCase());
+        return this;
+    }
+
+    public FragmentUtils replace(int fragmentID, Fragment replaceFragment) {
+        replace(fragmentID, replaceFragment, null);
+        return this;
+    }
+
+    public FragmentUtils add(int fragmentID, Fragment replaceFragment) {
+        add(fragmentID, replaceFragment, null);
         return this;
     }
 
@@ -59,11 +73,11 @@ public class FragmentUtils {
         transaction.commit();
     }
 
-    public void replace(@IdRes int containerViewId, @NonNull Fragment fragment) {
+   /* public void replace(@IdRes int containerViewId, @NonNull Fragment fragment) {
         FragmentManager manager = fragmentActivity.getSupportFragmentManager();
         manager.beginTransaction().replace(containerViewId,
                 fragment, fragment.getClass().getSimpleName()).addToBackStack(fragment.getClass().getSimpleName()).commit();
-    }
+    }*/
 
     public void replace(@IdRes int containerViewId, @NonNull Fragment fragment, boolean addToBackStack) {
         FragmentManager manager = fragmentActivity.getSupportFragmentManager();
