@@ -90,15 +90,15 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
                             if (NetworkUtils.with(app).isConnectedTo(app)) {
                                 File crashFile = FileUtils.with(app).getNewestFile(crashPath);
                                 HttpUtils httpUtils = HttpUtils.get();
-                                HashMap<String, String> params = new HashMap<>();
-                                params.put("appName", crashModel.getAppName());
-                                params.put("versionCode", String.valueOf(crashModel.getVersionCode()));
-                                params.put("packageName", crashModel.getPackageName());
-                                params.put("versionName", crashModel.getVersionName());
-                                params.put("error", crashModel.getError());
-                                params.put("stackTrace", crashModel.getStackTrace());
-                                params.put("cause", crashModel.getCause());
-                                httpUtils.postJson(url, params, null, null);
+                                HashMap<String, String> headers = new HashMap<>();
+                                headers.put("appName", crashModel.getAppName());
+                                headers.put("versionCode", String.valueOf(crashModel.getVersionCode()));
+                                headers.put("packageName", crashModel.getPackageName());
+                                headers.put("versionName", crashModel.getVersionName());
+                                headers.put("error", crashModel.getError());
+                                headers.put("stackTrace", crashModel.getStackTrace());
+                                headers.put("cause", crashModel.getCause());
+                                httpUtils.postJson(url, null, headers, null);
                                 latch.countDown();
                             }
                         }
