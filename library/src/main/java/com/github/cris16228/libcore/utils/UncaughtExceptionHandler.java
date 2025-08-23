@@ -98,7 +98,7 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
                                 params.put("error", crashModel.getError());
                                 params.put("stackTrace", crashModel.getStackTrace());
                                 params.put("cause", crashModel.getCause());
-                                httpUtils.post(url, params);
+                                httpUtils.postJson(url, params, null, null);
                                 latch.countDown();
                             }
                         }
