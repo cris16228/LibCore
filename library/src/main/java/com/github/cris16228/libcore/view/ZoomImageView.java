@@ -5,11 +5,11 @@ import android.content.res.TypedArray;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 
@@ -44,6 +44,28 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
         super(context);
         sharedConstructing(context);
     }
+
+    public Bundle saveState() {
+        Bundle bundle = new Bundle();
+        float[] values = new float[9];
+        matrix.getValues(values);
+        bundle.putFloatArray("matrix", values);
+        bundle.putFloat("scale", currentScale);
+        return bundle;
+    }
+
+    public void restoreState(Bundle bundle) {
+        if (bundle != null) {
+            float[] values = bundle.getFloatArray("matrix");
+            if (values != null) {
+                matrix.setValues(values);
+                currentScale = bundle.getFloat("scale");
+                setImageMatrix(matrix);
+                invalidate();
+            }
+        }
+    }
+
 
     public ZoomImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -97,76 +119,92 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
         });
 
         setOnTouchListener((v, event) -> {
-            mScaleDetector.onTouchEvent(event);
-            gestureDetector.onTouchEvent(event);
-            PointF curr = new PointF(event.getX(), event.getY());
-            if (onTouchEvent != null) {
-                onTouchEvent.onTouchEvent(event);
-            }
-            switch (event.getAction() & event.getActionMasked()) {
-                case MotionEvent.ACTION_DOWN:
-                    last.set(curr);
-                    start.set(last);
-                    mode = DRAG;
-                    stopInterceptEvent();
-                    performClick();
-                    break;
+            try {
+                if (event.getPointerCount() > 1 && event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
+                    mode = ZOOM;
+                }
 
-                case MotionEvent.ACTION_MOVE:
-                    stopInterceptEvent();
-                    if (mode == DRAG) {
-                        float deltaX = curr.x - last.x;
-                        float deltaY = curr.y - last.y;
-                        float fixTransX = getFixDragTrans(deltaX, viewWidth,
-                                origWidth * currentScale);
-                        float fixTransY = getFixDragTrans(deltaY, viewHeight,
-                                origHeight * currentScale);
-                        matrix.postTranslate(fixTransX, fixTransY);
-                        fixTrans();
-                        last.set(curr.x, curr.y);
-                        if (mScaleDetector.getScaleFactor() == currentScale)
-                            startInterceptEvent();
-                        else
-                            stopInterceptEvent();
-                    }
-                    break;
+                mScaleDetector.onTouchEvent(event);
+                gestureDetector.onTouchEvent(event);
 
-                case MotionEvent.ACTION_UP:
-                    mode = NONE;
-                    if (currentScale <= minScale + maxDifference) {
-                        currentScale = minScale;
-                        Drawable drawable = getDrawable();
-                        if (drawable != null) {
-                            int bmWidth = drawable.getIntrinsicWidth();
-                            int bmHeight = drawable.getIntrinsicHeight();
-                            float scaleX = (float) viewWidth / bmWidth;
-                            float scaleY = (float) viewHeight / bmHeight;
-                            float scale = Math.min(scaleX, scaleY);
-                            matrix.setScale(scale, scale);
-                            float scaledWidth = scale * bmWidth;
-                            float scaledHeight = scale * bmHeight;
-                            float translateX = (viewWidth - scaledWidth) / 2;
-                            float translateY = (viewHeight - scaledHeight) / 2;
-                            matrix.postTranslate(translateX, translateY);
+                if (onTouchEvent != null) {
+                    onTouchEvent.onTouchEvent(event);
+                }
+
+                PointF curr = new PointF(event.getX(), event.getY());
+
+                switch (event.getAction() & event.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        last.set(curr);
+                        start.set(last);
+                        mode = DRAG;
+                        stopInterceptEvent();
+                        performClick();
+                        break;
+
+                    case MotionEvent.ACTION_MOVE:
+                        stopInterceptEvent();
+                        if (mode == DRAG) {
+                            float deltaX = curr.x - last.x;
+                            float deltaY = curr.y - last.y;
+                            float fixTransX = getFixDragTrans(deltaX, viewWidth,
+                                    origWidth * currentScale);
+                            float fixTransY = getFixDragTrans(deltaY, viewHeight,
+                                    origHeight * currentScale);
+                            if (!Float.isNaN(fixTransX) && !Float.isNaN(fixTransY)) {
+                                matrix.postTranslate(fixTransX, fixTransY);
+                                fixTrans();
+                                last.set(curr.x, curr.y);/*
+                                if (mScaleDetector.getScaleFactor() == currentScale)
+                                    startInterceptEvent();
+                                else
+                                    stopInterceptEvent();*/
+                            }
                         }
-                    }
-                    int xDiff = (int) Math.abs(curr.x - start.x);
-                    int yDiff = (int) Math.abs(curr.y - start.y);
-                    if (xDiff < CLICK_THRESHOLD || yDiff < CLICK_THRESHOLD) {
-                        View parent = (View) getParent();
-                        parent.performClick();
-                    }
-                    startInterceptEvent();
-                    break;
-                case MotionEvent.ACTION_POINTER_UP:
-                    mode = NONE;
-                    break;
-            }
+                        break;
 
-            setImageMatrix(matrix);
-            invalidate();
-            return true; // indicate event was handled
+                    case MotionEvent.ACTION_UP:
+                        mode = NONE;
+                        if (currentScale <= minScale + maxDifference) {
+                            resetToMinScale();
+                        }
+                        startInterceptEvent();
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
+                        mode = NONE;
+                        startInterceptEvent();
+                        break;
+                    case MotionEvent.ACTION_POINTER_UP:
+                        mode = NONE;
+                        break;
+                }
+
+                setImageMatrix(matrix);
+                invalidate();
+                return true; // indicate event was handled
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
         });
+    }
+
+    private void resetToMinScale() {
+        currentScale = minScale;
+        Drawable drawable = getDrawable();
+        if (drawable != null) {
+            int bmWidth = drawable.getIntrinsicWidth();
+            int bmHeight = drawable.getIntrinsicHeight();
+            float scaleX = (float) viewWidth / bmWidth;
+            float scaleY = (float) viewHeight / bmHeight;
+            float scale = Math.min(scaleX, scaleY);
+            matrix.setScale(scale, scale);
+            float scaledWidth = scale * bmWidth;
+            float scaledHeight = scale * bmHeight;
+            float translateX = (viewWidth - scaledWidth) / 2;
+            float translateY = (viewHeight - scaledHeight) / 2;
+            matrix.postTranslate(translateX, translateY);
+        }
     }
 
     void fixTrans() {
@@ -183,39 +221,62 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
     }
 
     float getFixTrans(float trans, float viewSize, float contentSize) {
-        float minTrans, maxTrans;
+        try {
+            if (contentSize == 0 || viewSize == 0) {
+                return 0;
+            }
+            float minTrans, maxTrans;
 
-        if (contentSize <= viewSize) {
-            minTrans = 0;
-            maxTrans = viewSize - contentSize;
-        } else {
-            minTrans = viewSize - contentSize;
-            maxTrans = 0;
+            if (contentSize <= viewSize) {
+                minTrans = 0;
+                maxTrans = viewSize - contentSize;
+            } else {
+                minTrans = viewSize - contentSize;
+                maxTrans = 0;
+            }
+
+            if (trans < minTrans)
+                return -trans + minTrans;
+            if (trans > maxTrans)
+                return -trans + maxTrans;
+            return 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
         }
-
-        if (trans < minTrans)
-            return -trans + minTrans;
-        if (trans > maxTrans)
-            return -trans + maxTrans;
-        return 0;
     }
 
     float getFixDragTrans(float delta, float viewSize, float contentSize) {
-        if (contentSize <= viewSize) {
+        try {
+            if (contentSize <= viewSize || viewSize == 0) {
+                return 0;
+            }
+            return delta;
+        } catch (Exception e) {
+            e.printStackTrace();
             return 0;
         }
-        return delta;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        Matrix saveMatrix = new Matrix();
+        if (matrix != null) {
+            saveMatrix.set(matrix);
+        }
+
         viewWidth = MeasureSpec.getSize(widthMeasureSpec);
         viewHeight = MeasureSpec.getSize(heightMeasureSpec);
 
         if (oldMeasuredHeight == viewWidth && oldMeasuredHeight == viewHeight
-                || viewWidth == 0 || viewHeight == 0)
+                || viewWidth == 0 || viewHeight == 0) {
+            if (matrix != null) {
+                matrix.set(saveMatrix);
+            }
             return;
+        }
         oldMeasuredHeight = viewHeight;
         oldMeasuredWidth = viewWidth;
 
@@ -247,6 +308,9 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
             origHeight = viewHeight - 2 * redundantYSpace;
             setImageMatrix(matrix);
         }
+        if (saveMatrix != null) {
+            matrix.set(saveMatrix);
+        }
         fixTrans();
     }
 
@@ -256,18 +320,27 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
 
     private class ScaleListener extends
             ScaleGestureDetector.SimpleOnScaleGestureListener {
+        private float lastFocusX = 0f;
+        private float lastFocusY = 0f;
+
         @Override
         public boolean onScaleBegin(@NonNull ScaleGestureDetector detector) {
             mode = ZOOM;
+            lastFocusX = detector.getFocusX();
+            lastFocusY = detector.getFocusY();
             return true;
         }
 
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            float mScaleFactor = detector.getScaleFactor();
-            if (!Float.isNaN(mScaleFactor) && mScaleFactor > 0) {
+            try {
+                float mScaleFactor = detector.getScaleFactor();
+                if (Float.isNaN(mScaleFactor) || Float.isInfinite(mScaleFactor) || mScaleFactor <= 0) {
+                    return false;
+                }
                 float origScale = currentScale;
                 currentScale *= mScaleFactor;
+
                 if (currentScale > maxScale) {
                     currentScale = maxScale;
                     mScaleFactor = maxScale / origScale;
@@ -275,19 +348,25 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
                     currentScale = minScale;
                     mScaleFactor = minScale / origScale;
                 }
-
-                if (origWidth * currentScale <= viewWidth
-                        || origHeight * currentScale <= viewHeight)
-                    matrix.postScale(mScaleFactor, mScaleFactor, viewWidth / 2f,
-                            viewHeight / 2f);
-                else
-                    matrix.postScale(mScaleFactor, mScaleFactor,
-                            detector.getFocusX(), detector.getFocusY());
-
+                if (detector.getFocusX() != 0 || detector.getFocusY() != 0) {
+                    lastFocusX = detector.getFocusX();
+                    lastFocusY = detector.getFocusY();
+                }
+            /*if (origWidth * currentScale <= viewWidth
+                    || origHeight * currentScale <= viewHeight)
+                matrix.postScale(mScaleFactor, mScaleFactor, viewWidth / 2f,
+                        viewHeight / 2f);
+            else
+                matrix.postScale(mScaleFactor, mScaleFactor,
+                        detector.getFocusX(), detector.getFocusY());*/
+                matrix.postScale(mScaleFactor, mScaleFactor,
+                        lastFocusX, lastFocusY);
                 fixTrans();
                 return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
             }
-            return false;
         }
     }
 }
