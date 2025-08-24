@@ -262,10 +262,11 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        Matrix saveMatrix = new Matrix();
+        float[] values = new float[9];
         if (matrix != null) {
-            saveMatrix.set(matrix);
+            matrix.getValues(values);
         }
+        float savedScale = currentScale;
 
         viewWidth = MeasureSpec.getSize(widthMeasureSpec);
         viewHeight = MeasureSpec.getSize(heightMeasureSpec);
@@ -273,44 +274,55 @@ public class ZoomImageView extends androidx.appcompat.widget.AppCompatImageView 
         if (oldMeasuredHeight == viewWidth && oldMeasuredHeight == viewHeight
                 || viewWidth == 0 || viewHeight == 0) {
             if (matrix != null) {
-                matrix.set(saveMatrix);
+                matrix.setValues(values);
             }
             return;
         }
         oldMeasuredHeight = viewHeight;
         oldMeasuredWidth = viewWidth;
+        // Fit to screen.
+        float scale;
 
-        if (currentScale == 1) {
-            // Fit to screen.
-            float scale;
+        Drawable drawable = getDrawable();
+        if (drawable == null || drawable.getIntrinsicWidth() == 0
+                || drawable.getIntrinsicHeight() == 0) {
+            return;
+        }
+        int bmWidth = drawable.getIntrinsicWidth();
+        int bmHeight = drawable.getIntrinsicHeight();
 
-            Drawable drawable = getDrawable();
-            if (drawable == null || drawable.getIntrinsicWidth() == 0
-                    || drawable.getIntrinsicHeight() == 0)
-                return;
-            int bmWidth = drawable.getIntrinsicWidth();
-            int bmHeight = drawable.getIntrinsicHeight();
+        float scaleX = (float) viewWidth / (float) bmWidth;
+        float scaleY = (float) viewHeight / (float) bmHeight;
+        scale = Math.min(scaleX, scaleY);
 
-            float scaleX = (float) viewWidth / (float) bmWidth;
-            float scaleY = (float) viewHeight / (float) bmHeight;
-            scale = Math.min(scaleX, scaleY);
+        //Center the image
+        float redundantYSpace = (float) viewHeight - (scale * (float) bmHeight);
+        float redundantXSpace = (float) viewWidth - (scale * (float) bmWidth);
+        redundantYSpace /= (float) 2;
+        redundantXSpace /= (float) 2;
+
+        if (savedScale <= minScale || Float.isNaN(savedScale)) {
+            currentScale = minScale;
             matrix.setScale(scale, scale);
-
-            //Center the image
-            float redundantYSpace = (float) viewHeight - (scale * (float) bmHeight);
-            float redundantXSpace = (float) viewWidth - (scale * (float) bmWidth);
-            redundantYSpace /= (float) 2;
-            redundantXSpace /= (float) 2;
-
             matrix.postTranslate(redundantXSpace, redundantYSpace);
-
             origWidth = viewWidth - 2 * redundantXSpace;
             origHeight = viewHeight - 2 * redundantYSpace;
-            setImageMatrix(matrix);
+        } else {
+            float newScale = Math.min(Math.max(savedScale, minScale), maxScale);
+            float newOrigWidth = viewWidth / newScale;
+            float newOrigHeight = viewHeight / newScale;
+
+            float dx = (viewWidth - newOrigWidth) / 2f;
+            float dy = (viewHeight - newOrigHeight) / 2f;
+            matrix.setScale(newScale, newScale);
+            matrix.postTranslate(dx, dy);
+
+            origWidth = newOrigWidth;
+            origHeight = newOrigHeight;
+            currentScale = newScale;
         }
-        if (saveMatrix != null) {
-            matrix.set(saveMatrix);
-        }
+
+        setImageMatrix(matrix);
         fixTrans();
     }
 
