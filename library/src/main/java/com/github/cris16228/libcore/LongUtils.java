@@ -4,6 +4,7 @@ import android.content.Context;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class LongUtils {
 
@@ -161,5 +162,20 @@ public class LongUtils {
 
     public String toReadableTimeFull(long timeInMillis) {
         return toReadableTimeFull(timeInMillis, "dhm", false);
+    }
+
+    public static String convertDuration(long millis) {
+        if (millis <= 0) {
+            return "00:00";
+        }
+        if (TimeUnit.MILLISECONDS.toHours(millis) > 0) {
+            return String.format(Locale.getDefault(), "%02d:%02d:%02d",
+                    TimeUnit.MILLISECONDS.toHours(millis),
+                    TimeUnit.MILLISECONDS.toMinutes(millis) % 60,
+                    TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
+        }
+        return String.format(Locale.getDefault(), "%02d:%02d",
+                TimeUnit.MILLISECONDS.toMinutes(millis) % 60,
+                TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
     }
 }
