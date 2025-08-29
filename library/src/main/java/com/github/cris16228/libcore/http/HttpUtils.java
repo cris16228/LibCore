@@ -755,8 +755,6 @@ public class HttpUtils {
                             conn.disconnect();
                             chunkIndex++;
                         }
-
-                        fileInputStream.close();
                         progressCallback.onSingleMediaProcessed(i);
                     }
                 }
