@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -668,7 +669,6 @@ public class HttpUtils {
                         long fileSize = file.length();
                         int chunkIndex = 0;
                         int totalChunks = (int) Math.ceil((double) fileSize / chunkSize);
-                        FileInputStream fileInputStream = new FileInputStream(file);
 
                         while (chunkIndex < totalChunks) {
                             long chunkStart = (long) chunkIndex * chunkSize;
@@ -685,6 +685,8 @@ public class HttpUtils {
                             conn.setRequestMethod("POST");
                             conn.setRequestProperty("Connection", "Keep-Alive");
                             conn.setRequestProperty("Accept-Charset", "UTF-8");
+                            conn.setConnectTimeout(30000);
+                            conn.setReadTimeout(30000);
 
                             boundary = "*****" + System.currentTimeMillis() + "*****";
                             String boundaryHeader = twoHyphens + boundary + lineEnd + "Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + file.getName() + "\"" + lineEnd + "Content-Type: " + mimeType + lineEnd + lineEnd;
@@ -712,19 +714,23 @@ public class HttpUtils {
 
                             dos.writeBytes(boundaryHeader);
 
-                            byte[] buffer = new byte[256 * 1024];
-                            int bytesRead;
-                            long chunkBytesUploaded = 0;
+                            try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+                                raf.seek(chunkStart);
 
-                            while (chunkBytesUploaded < chunkToRead && (bytesRead = fileInputStream.read(buffer, 0, (int) Math.min(buffer.length, chunkToRead - chunkBytesUploaded))) != -1) {
-                                dos.write(buffer, 0, bytesRead);
-                                dos.flush();
-                                uploadedBytes += bytesRead;
-                                chunkBytesUploaded += bytesRead;
-                                if (isSingleFileProgress) {
-                                    progressCallback.onProgress(chunkBytesUploaded, fileSize, (int) ((chunkBytesUploaded * 100) / fileSize), file.getName(), i);
-                                } else {
-                                    progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName(), i);
+                                byte[] buffer = new byte[256 * 1024];
+                                int bytesRead;
+                                long chunkBytesUploaded = 0;
+
+                                while (chunkBytesUploaded < chunkToRead && (bytesRead = raf.read(buffer, 0, (int) Math.min(buffer.length, chunkToRead - chunkBytesUploaded))) != -1) {
+                                    dos.write(buffer, 0, bytesRead);
+                                    dos.flush();
+                                    uploadedBytes += bytesRead;
+                                    chunkBytesUploaded += bytesRead;
+                                    if (isSingleFileProgress) {
+                                        progressCallback.onProgress(chunkBytesUploaded, fileSize, (int) ((chunkBytesUploaded * 100) / fileSize), file.getName(), i);
+                                    } else {
+                                        progressCallback.onProgress(uploadedBytes, totalBytes, (int) ((uploadedBytes * 100) / totalBytes), file.getName(), i);
+                                    }
                                 }
                             }
                             dos.writeBytes(boundaryFooter);
