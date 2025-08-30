@@ -111,7 +111,7 @@ public class PieChartView extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
         if (slices.isEmpty()) {
             return;
