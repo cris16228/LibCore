@@ -83,6 +83,7 @@ public class PieChartView extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int desired = dpToPx(200);
         int w = resolveSize(desired, widthMeasureSpec);
         int h = resolveSize(desired, heightMeasureSpec);
