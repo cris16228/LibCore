@@ -15,6 +15,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.github.cris16228.libcore.R;
 
@@ -40,6 +41,12 @@ public class PieChartView extends View {
 
     public PieChartView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        initAttrs(context, attrs);
+        clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+    }
+
+    public PieChartView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
         initAttrs(context, attrs);
         clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
     }
