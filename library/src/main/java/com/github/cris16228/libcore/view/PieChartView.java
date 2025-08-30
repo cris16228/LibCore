@@ -90,7 +90,7 @@ public class PieChartView extends View {
         System.out.println("onMeasure: h " + h + " w " + w);
         int size = Math.min(w, h);
         System.out.println("onMeasure: size " + size);
-        setMeasuredDimension(size, size);
+        setMeasuredDimension(200, 200);
     }
 
     @Override
