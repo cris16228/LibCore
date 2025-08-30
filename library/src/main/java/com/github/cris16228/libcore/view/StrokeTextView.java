@@ -44,7 +44,7 @@ public class StrokeTextView extends TextView {
         if (attrs != null) {
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.StrokeTextView);
             if (a.hasValue(R.styleable.StrokeTextView_strokeColor)) {
-                float strokeWidth = a.getDimensionPixelSize(R.styleable.StrokeTextView_strokeWidth, 1);
+                float strokeWidth = a.getDimensionPixelSize(R.styleable.StrokeTextView_textStrokeWidth, 1);
                 int strokeColor = a.getColor(R.styleable.StrokeTextView_strokeColor, 0xff000000);
                 float strokeMiter = a.getDimensionPixelSize(R.styleable.StrokeTextView_strokeMiter, 10);
                 Paint.Join strokeJoin = null;
