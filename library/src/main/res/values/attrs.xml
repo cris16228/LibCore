@@ -38,8 +38,14 @@
         </attr>
     </declare-styleable>
 
-    <declare-styleable name="PieChart">
-        <attr name="pieChartSize" format="dimension" />
+    <declare-styleable name="PieChartView">
+        <attr name="strokeWidth" format="dimension" />
+        <attr name="showLabels" format="boolean" />
+        <attr name="labelTextSize" format="dimension" />
+        <attr name="labelColor" format="color" />
+        <attr name="holeRadiusPercent" format="float" />
+
+        <!--<attr name="pieChartSize" format="dimension" />
         <attr name="pieChartXOffset" format="dimension" />
         <attr name="pieChartYOffset" format="dimension" />
         <attr name="enablePercent" format="boolean" />
@@ -58,6 +64,6 @@
         <attr name="titleMarginBottom" format="dimension" />
         <attr name="titleMarginStart" format="dimension" />
         <attr name="titleMarginEnd" format="dimension" />
-        <attr name="titleMargin" format="dimension" />
+        <attr name="titleMargin" format="dimension" />-->
     </declare-styleable>
 </resources>
