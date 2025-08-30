@@ -35,33 +35,6 @@ public class PieChartView extends View {
     private int labelColor = Color.BLACK;
     private float holeRadiusPercent = 0f;
     private float animationProgress = 1f;
-    /*
-    double totalAmount = 0;
-    private List<PieChartModel> pieChartModels = new ArrayList<>();
-    private int dataSize;
-    private Scroller scroller;
-    private int legendScrollY = 0;
-    private float startY = 0f;
-    private int pieChartSize;
-    private int pieChartXOffset;
-    private int pieChartYOffset;
-    private int legendWidth;
-    private boolean enablePercent;
-    private boolean enableLegend;
-    private boolean useDefaultColors;
-    private List<String> colors;
-    private boolean legendOnRight;
-    private int legendX;
-    private int legendY;
-    private String titleText = "";
-    private int titleTextSize = 40;
-    private int titleTextColor = Color.BLACK;
-    private Paint.Align titleTextAlignment = Paint.Align.CENTER;
-    private int titleMarginTop = 0;
-    private int titleMarginBottom = 0;
-    private int titleMarginLeft = 0;
-    private int titleMarginRight = 0;
-    private int titleMargin = 0;*/
     private final String[] defaultColors = {"#AF7AC5", "#1ABC9C", "#DC7633", "#8E44AD", "#F7DC6F", "#D35400", "#3498DB", "#F0B27A", "#A569BD", "#fc3f8f", "#7FFF00", "#F1948A", "#2E86C1", "#9ACD32", "#c11b7b", "#FF6F61", "#1F618D", "#FF5733", "#28B463", "#76D7C4", "#D98880", "#6C3483", "#5499C7", "#C0392B", "#E67E22", "#900C3F", "#bc4017", "#FFD700", "#00FA9A", "#9B59B6", "#F1C40F", "#C70039", "#FF4500", "#E74C3C", "#7D3C98", "#00CED1", "#E59866", "#C39BD3", "#2874A6", "#FF69B4", "#F39C12", "#27AE60", "#FFC300", "#2ECC71", "#F8C471", "#16A085", "#2980B9", "#8A2BE2", "#5D6D7E", "#E9967A"};
 
 
@@ -106,13 +79,16 @@ public class PieChartView extends View {
         int desired = dpToPx(200);
         int w = resolveSize(desired, widthMeasureSpec);
         int h = resolveSize(desired, heightMeasureSpec);
+        System.out.println("onMeasure: h " + h + " w " + w);
         int size = Math.min(w, h);
+        System.out.println("onMeasure: size " + size);
         setMeasuredDimension(size, size);
     }
 
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
+        System.out.println("onDraw: slices is " + slices.size());
         if (slices.isEmpty()) {
             return;
         }
@@ -121,6 +97,8 @@ public class PieChartView extends View {
         for (Slice slice : slices) {
             totalValue += slice.value;
         }
+
+        System.out.println("onDraw: totalValue is " + totalValue);
         if (totalValue == 0) {
             return;
         }
