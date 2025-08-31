@@ -84,13 +84,15 @@ public class PieChartView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int desired = dpToPx(200);
-        int w = resolveSize(desired, widthMeasureSpec);
-        int h = resolveSize(desired, heightMeasureSpec);
-        System.out.println("onMeasure: h " + h + " w " + w);
-        int size = Math.min(w, h);
-        System.out.println("onMeasure: size " + size);
-        setMeasuredDimension(200, 200);
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+        int minDimension = dpToPx(200);
+
+        int desired = Math.max(width, height);
+        desired = Math.max(desired, minDimension);
+        int finalSize = resolveSize(desired, widthMeasureSpec);
+        System.out.println("onMeasure: h " + height + " w " + width + " desired " + desired + " finalSize " + finalSize);
+        setMeasuredDimension(finalSize, finalSize);
     }
 
     @Override
