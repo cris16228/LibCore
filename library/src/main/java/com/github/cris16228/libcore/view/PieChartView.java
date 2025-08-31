@@ -138,12 +138,12 @@ public class PieChartView extends View {
             return;
         }
 
-        float totalValue = 0;
+        float value = 0;
         for (Slice slice : slices) {
-            totalValue += slice.value;
+            value += slice.value;
         }
 
-        if (totalValue == 0) {
+        if (value == 0) {
             return;
         }
 
