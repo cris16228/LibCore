@@ -44,26 +44,12 @@
         <attr name="labelTextSize" format="dimension" />
         <attr name="labelColor" format="color" />
         <attr name="holeRadiusPercent" format="float" />
-
-        <!--<attr name="pieChartSize" format="dimension" />
-        <attr name="pieChartXOffset" format="dimension" />
-        <attr name="pieChartYOffset" format="dimension" />
-        <attr name="enablePercent" format="boolean" />
-        <attr name="enableLegend" format="boolean" />
-        <attr name="useDefaultColors" format="boolean" />
-        <attr name="legendOnRight" format="boolean" />
-        <attr name="text" format="string" />
-        <attr name="textSize" format="dimension" />
-        <attr name="textColor" format="color" />
-        <attr name="textAlignment">
-            <enum name="left" value="0" />
-            <enum name="center" value="1" />
-            <enum name="right" value="2" />
-        </attr>
-        <attr name="titleMarginTop" format="dimension" />
-        <attr name="titleMarginBottom" format="dimension" />
-        <attr name="titleMarginStart" format="dimension" />
-        <attr name="titleMarginEnd" format="dimension" />
-        <attr name="titleMargin" format="dimension" />-->
+        <attr name="legendEnabled" format="boolean" />
+        <attr name="legendTextSize" format="dimension" />
+        <attr name="legendTextColor" format="color" />
+        <attr name="legendSwatchSize" format="dimension" />
+        <attr name="legendSpacing" format="dimension" />
+        <attr name="legendRowSpacing" format="dimension" />
+        <attr name="legendMaxRows" format="integer" />
     </declare-styleable>
 </resources>

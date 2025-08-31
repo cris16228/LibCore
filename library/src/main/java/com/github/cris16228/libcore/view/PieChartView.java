@@ -11,11 +11,13 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
+import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.github.cris16228.libcore.R;
 
@@ -28,6 +30,8 @@ public class PieChartView extends View {
     private final Paint slicePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint clearPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint legendTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint legendSwatchPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF drawingRect = new RectF();
     private List<Slice> slices = Collections.emptyList();
     private float strokeWidth = 0f;
@@ -36,17 +40,18 @@ public class PieChartView extends View {
     private int labelColor = Color.BLACK;
     private float holeRadiusPercent = 0f;
     private float animationProgress = 1f;
+    private boolean legendEnabled = true;
+    private float legendTextSize = dpToPx(12);
+    private int legendTextColor = Color.WHITE;
+    private float legendSwatchSize = dpToPx(12);
+    private float legendSpacing = dpToPx(8);
+    private float legendRowSpacing = dpToPx(4);
+    private int legendMaxRows = Integer.MAX_VALUE;
     private final String[] defaultColors = {"#AF7AC5", "#1ABC9C", "#DC7633", "#8E44AD", "#F7DC6F", "#D35400", "#3498DB", "#F0B27A", "#A569BD", "#fc3f8f", "#7FFF00", "#F1948A", "#2E86C1", "#9ACD32", "#c11b7b", "#FF6F61", "#1F618D", "#FF5733", "#28B463", "#76D7C4", "#D98880", "#6C3483", "#5499C7", "#C0392B", "#E67E22", "#900C3F", "#bc4017", "#FFD700", "#00FA9A", "#9B59B6", "#F1C40F", "#C70039", "#FF4500", "#E74C3C", "#7D3C98", "#00CED1", "#E59866", "#C39BD3", "#2874A6", "#FF69B4", "#F39C12", "#27AE60", "#FFC300", "#2ECC71", "#F8C471", "#16A085", "#2980B9", "#8A2BE2", "#5D6D7E", "#E9967A"};
 
 
     public PieChartView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        initAttrs(context, attrs);
-        clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-    }
-
-    public PieChartView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
         initAttrs(context, attrs);
         clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
     }
@@ -58,13 +63,24 @@ public class PieChartView extends View {
         labelTextSize = attributes.getDimensionPixelSize(R.styleable.PieChartView_labelTextSize, spToPx(12));
         labelColor = attributes.getColor(R.styleable.PieChartView_labelColor, Color.BLACK);
         holeRadiusPercent = attributes.getFloat(R.styleable.PieChartView_holeRadiusPercent, 0f);
+        legendEnabled = attributes.getBoolean(R.styleable.PieChartView_legendEnabled, true);
+        legendTextSize = attributes.getDimensionPixelSize(R.styleable.PieChartView_legendTextSize, spToPx(12));
+        legendTextColor = attributes.getColor(R.styleable.PieChartView_legendTextColor, Color.WHITE);
+        legendSwatchSize = attributes.getDimensionPixelSize(R.styleable.PieChartView_legendSwatchSize, dpToPx(12));
+        legendSpacing = attributes.getDimensionPixelSize(R.styleable.PieChartView_legendSpacing, dpToPx(8));
+        legendRowSpacing = attributes.getDimensionPixelSize(R.styleable.PieChartView_legendRowSpacing, dpToPx(4));
+        legendMaxRows = attributes.getInt(R.styleable.PieChartView_legendMaxRows, Integer.MAX_VALUE);
         attributes.recycle();
         labelPaint.setTextSize(labelTextSize);
         labelPaint.setColor(labelColor);
+        legendTextPaint.setTextSize(legendTextSize);
+        legendTextPaint.setColor(legendTextColor);
+        legendTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
     }
 
     public void setData(List<Slice> data) {
         this.slices = data != null ? data : Collections.emptyList();
+        requestLayout();
         invalidate();
     }
 
@@ -83,22 +99,23 @@ public class PieChartView extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
-        int minDimension = dpToPx(200);
+        int baseSize = Math.min(width, height);
 
-        int desired = Math.max(width, height);
-        desired = Math.max(desired, minDimension);
-        int finalSize = resolveSize(desired, widthMeasureSpec);
-        System.out.println("onMeasure: h " + height + " w " + width + " desired " + desired + " finalSize " + finalSize);
-        setMeasuredDimension(finalSize, finalSize);
+        int legendRows = Math.min(slices.size(), legendMaxRows);
+        int legendHeight = 0;
+        if (legendEnabled && legendRows > 0) {
+            legendHeight = (int) (dpToPx(12) + legendRows * (legendSwatchSize + legendRowSpacing) + dpToPx(12));
+        }
+        int desiredWidth = resolveSize(baseSize, widthMeasureSpec);
+        int desiredHeight = resolveSize(baseSize + legendHeight, heightMeasureSpec);
+        setMeasuredDimension(desiredWidth, desiredHeight);
     }
 
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
-        System.out.println("onDraw: slices is " + slices.size());
         if (slices.isEmpty()) {
             return;
         }
@@ -108,7 +125,6 @@ public class PieChartView extends View {
             totalValue += slice.value;
         }
 
-        System.out.println("onDraw: totalValue is " + totalValue);
         if (totalValue == 0) {
             return;
         }
@@ -140,8 +156,48 @@ public class PieChartView extends View {
                 drawingRect.inset(-inset, -inset);
             }
 
+            if (!legendEnabled && !slices.isEmpty()) {
+
+                long total = total();
+                if (total == 0) total = 1;
+
+                float legendMargin = dpToPx(12);
+                float startY = size + legendMargin;
+
+                int viewWidth = getWidth() - getPaddingLeft() - getPaddingRight();
+
+                int rowsDrawn = 0;
+                for (int i = 0; i < slices.size() && rowsDrawn < legendMaxRows; i++) {
+                    Slice s = slices.get(i);
+
+                    float pct = (float) s.value / total * 100f;
+                    String percent = String.format(Locale.getDefault(), "%.1f%%", pct);
+
+                    float swatchLeft = getPaddingLeft();
+                    float swatchTop = startY + rowsDrawn * (legendSwatchSize + legendSpacing);
+                    float swatchRight = swatchLeft + legendSwatchSize;
+                    float swatchBottom = swatchTop + legendSwatchSize;
+
+                    legendSwatchPaint.setColor(s.color);
+                    canvas.drawRect(swatchLeft, swatchTop, swatchRight, swatchBottom, legendSwatchPaint);
+
+                    float textX = swatchRight + legendSpacing;
+                    Paint.FontMetrics fontMetrics = legendTextPaint.getFontMetrics();
+                    float textBaseLine = swatchTop - fontMetrics.ascent;
+
+                    float maxLabelWidth = viewWidth - (textX - getPaddingLeft()) - legendSpacing - legendTextPaint.measureText(percent) - getPaddingRight();
+                    String label = TextUtils.ellipsize(s.label, (TextPaint) legendTextPaint, maxLabelWidth, TextUtils.TruncateAt.END).toString();
+                    canvas.drawText(label, textX, textBaseLine, legendTextPaint);
+
+                    float pctX = getPaddingLeft() + viewWidth - legendTextPaint.measureText(percent);
+                    canvas.drawText(percent, pctX, textBaseLine, legendTextPaint);
+
+                    rowsDrawn++;
+                }
+            }
+
             if (showLabels) {
-                String txt = String.format(Locale.getDefault(), "%s: %d", slice.label, Math.round((slice.value / totalValue) * 100));
+                String txt = String.format(Locale.getDefault(), "%d%%", Math.round((slice.value / totalValue) * 100));
                 drawLabel(canvas, txt, startAngle, sweepAngle);
             }
             startAngle += sweepAngle;
@@ -180,8 +236,8 @@ public class PieChartView extends View {
         return sb.toString();
     }
 
-    private float total() {
-        float total = 0;
+    private long total() {
+        long total = 0;
         for (Slice slice : slices) {
             total += slice.value;
         }
@@ -190,10 +246,10 @@ public class PieChartView extends View {
 
     public static class Slice {
         public final String label;
-        public final float value;
+        public final long value;
         public final int color;
 
-        public Slice(String label, float value, int color) {
+        public Slice(String label, long value, int color) {
             this.label = label;
             this.value = value;
             this.color = color;
