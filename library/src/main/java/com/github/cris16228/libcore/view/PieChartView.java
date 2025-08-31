@@ -76,9 +76,12 @@ public class PieChartView extends View {
         attributes.recycle();
         labelPaint.setTextSize(labelTextSize);
         labelPaint.setColor(labelColor);
+        if (labelTextSize > 18f) {
+            labelTextSize = 18f;
+        }
         legendTextPaint.setTextSize(legendTextSize);
         legendTextPaint.setColor(legendTextColor);
-        legendTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        legendTextPaint.setTypeface(Typeface.DEFAULT);
     }
 
     public void setData(List<Slice> data) {
@@ -111,10 +114,16 @@ public class PieChartView extends View {
         int height = MeasureSpec.getSize(heightMeasureSpec);
         int baseSize = Math.min(width, height);
 
+        float requestedPx = spToPx(labelTextSize);
+        float maxPx = spToPx(18);
+        float effectivePx = Math.min(requestedPx, maxPx);
+        legendTextPaint.setTextSize(effectivePx);
+        Paint.FontMetrics fontMetrics = legendTextPaint.getFontMetrics();
+        float rowHeight = Math.abs(fontMetrics.ascent) + fontMetrics.descent + legendRowSpacing;
         int legendRows = Math.min(slices.size(), legendMaxRows);
         int legendHeight = 0;
         if (legendEnabled && legendRows > 0) {
-            legendHeight = (int) (dpToPx(12) + legendRows * (legendSwatchSize + legendRowSpacing) + dpToPx(12));
+            legendHeight = (int) (dpToPx(12) + legendRows * rowHeight + dpToPx(12));
         }
         measuredLegendHeight = legendHeight;
         int desiredWidth = resolveSize(baseSize, widthMeasureSpec);
