@@ -1,6 +1,7 @@
 package com.github.cris16228.libcore;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.annotation.AnimRes;
 import androidx.annotation.AnimatorRes;
@@ -23,6 +24,17 @@ public class FragmentUtils {
         fragmentUtils.fragmentActivity = _fragmentActivity;
         fragmentUtils.transaction = fragmentUtils.fragmentManager.beginTransaction();
         return fragmentUtils;
+    }
+
+    public FragmentUtils show(int showFragment, View view) {
+        Fragment fragment = fragmentManager.findFragmentById(showFragment);
+        if (fragment != null) {
+            transaction.show(fragment);
+        }
+        if (view != null) {
+            view.findViewById(showFragment).setVisibility(View.VISIBLE);
+        }
+        return this;
     }
 
     public FragmentUtils show(int showFragment) {

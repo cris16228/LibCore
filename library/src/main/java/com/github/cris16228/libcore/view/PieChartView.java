@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.text.TextPaint;
@@ -156,44 +155,9 @@ public class PieChartView extends View {
                 drawingRect.inset(-inset, -inset);
             }
 
-            if (!legendEnabled && !slices.isEmpty()) {
+            if (legendEnabled && !slices.isEmpty()) {
 
-                long total = total();
-                if (total == 0) total = 1;
-
-                float legendMargin = dpToPx(12);
-                float startY = size + legendMargin;
-
-                int viewWidth = getWidth() - getPaddingLeft() - getPaddingRight();
-
-                int rowsDrawn = 0;
-                for (int i = 0; i < slices.size() && rowsDrawn < legendMaxRows; i++) {
-                    Slice s = slices.get(i);
-
-                    float pct = (float) s.value / total * 100f;
-                    String percent = String.format(Locale.getDefault(), "%.1f%%", pct);
-
-                    float swatchLeft = getPaddingLeft();
-                    float swatchTop = startY + rowsDrawn * (legendSwatchSize + legendSpacing);
-                    float swatchRight = swatchLeft + legendSwatchSize;
-                    float swatchBottom = swatchTop + legendSwatchSize;
-
-                    legendSwatchPaint.setColor(s.color);
-                    canvas.drawRect(swatchLeft, swatchTop, swatchRight, swatchBottom, legendSwatchPaint);
-
-                    float textX = swatchRight + legendSpacing;
-                    Paint.FontMetrics fontMetrics = legendTextPaint.getFontMetrics();
-                    float textBaseLine = swatchTop - fontMetrics.ascent;
-
-                    float maxLabelWidth = viewWidth - (textX - getPaddingLeft()) - legendSpacing - legendTextPaint.measureText(percent) - getPaddingRight();
-                    String label = TextUtils.ellipsize(s.label, (TextPaint) legendTextPaint, maxLabelWidth, TextUtils.TruncateAt.END).toString();
-                    canvas.drawText(label, textX, textBaseLine, legendTextPaint);
-
-                    float pctX = getPaddingLeft() + viewWidth - legendTextPaint.measureText(percent);
-                    canvas.drawText(percent, pctX, textBaseLine, legendTextPaint);
-
-                    rowsDrawn++;
-                }
+                drawLegend(canvas);
             }
 
             if (showLabels) {
@@ -201,6 +165,46 @@ public class PieChartView extends View {
                 drawLabel(canvas, txt, startAngle, sweepAngle);
             }
             startAngle += sweepAngle;
+        }
+    }
+
+    private void drawLegend(@NonNull Canvas canvas) {
+        long total = total();
+        if (total == 0) total = 1;
+
+        float legendMargin = dpToPx(12);
+        float size = Math.min(getWidth() - getPaddingLeft() - getPaddingRight(), getHeight() - getPaddingTop() - getPaddingBottom());
+        float startY = size + legendMargin;
+
+        int viewWidth = getWidth() - getPaddingLeft() - getPaddingRight();
+
+        int rowsDrawn = 0;
+        for (int i = 0; i < slices.size() && rowsDrawn < legendMaxRows; i++) {
+            Slice s = slices.get(i);
+
+            float pct = (float) s.value / total * 100f;
+            String percent = String.format(Locale.getDefault(), "%.1f%%", pct);
+
+            float swatchLeft = getPaddingLeft();
+            float swatchTop = startY + rowsDrawn * (legendSwatchSize + legendSpacing);
+            float swatchRight = swatchLeft + legendSwatchSize;
+            float swatchBottom = swatchTop + legendSwatchSize;
+
+            legendSwatchPaint.setColor(s.color);
+            canvas.drawRect(swatchLeft, swatchTop, swatchRight, swatchBottom, legendSwatchPaint);
+
+            float textX = swatchRight + legendSpacing;
+            Paint.FontMetrics fontMetrics = legendTextPaint.getFontMetrics();
+            float textBaseLine = swatchTop - fontMetrics.ascent;
+
+            float maxLabelWidth = viewWidth - (textX - getPaddingLeft()) - legendSpacing - legendTextPaint.measureText(percent) - getPaddingRight();
+            String label = TextUtils.ellipsize(s.label, (TextPaint) legendTextPaint, maxLabelWidth, TextUtils.TruncateAt.END).toString();
+            canvas.drawText(label, textX, textBaseLine, legendTextPaint);
+
+            float pctX = getPaddingLeft() + viewWidth - legendTextPaint.measureText(percent);
+            canvas.drawText(percent, pctX, textBaseLine, legendTextPaint);
+
+            rowsDrawn++;
         }
     }
 
@@ -212,9 +216,9 @@ public class PieChartView extends View {
         float cx = (float) (drawingRect.centerX() + radius * Math.cos(rad));
         float cy = (float) (drawingRect.centerY() + radius * Math.sin(rad));
 
-        Rect bounds = new Rect();
-        labelPaint.getTextBounds(txt, 0, txt.length(), bounds);
-        canvas.drawText(txt, cx - bounds.width() / 2f, cy + bounds.height() / 2f, labelPaint);
+        Paint.FontMetrics fontMetrics = labelPaint.getFontMetrics();
+        float yOffset = (fontMetrics.descent + fontMetrics.ascent) / 2f;
+        canvas.drawText(txt, cx, cy - yOffset, labelPaint);
     }
 
     private int dpToPx(float dp) {
