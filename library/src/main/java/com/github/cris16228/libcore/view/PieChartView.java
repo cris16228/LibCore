@@ -179,7 +179,7 @@ public class PieChartView extends View {
 
             if (showLabels) {
                 long total = totalValue <= 0 ? total() : totalValue;
-                String txt = String.format(Locale.getDefault(), "%d%%", Math.round((slice.value / (float) total) * 100));
+                String txt = String.format(Locale.getDefault(), "%.1f%%", (slice.value / (float) total) * 100);
                 drawLabel(canvas, txt, startAngle, sweepAngle);
             }
             startAngle += sweepAngle;
