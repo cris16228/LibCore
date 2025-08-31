@@ -162,7 +162,9 @@ public class PieChartView extends View {
         float startAngle = -90f;
         for (Slice slice : slices) {
             if (slice.value <= 0) continue;
-            float sweepAngle = (slice.value / totalValue == 0 ? value : totalValue) * 360 * animationProgress;
+            long effectiveValue = (totalValue > 0) ? (long) value : totalValue;
+            if (effectiveValue == 0) return;
+            float sweepAngle = (slice.value / (float) effectiveValue) * 360 * animationProgress;
             if (sweepAngle <= 0) continue;
 
             slicePaint.setColor(slice.color);
