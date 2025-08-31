@@ -29,7 +29,7 @@ public class PieChartView extends View {
     private final Paint slicePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint clearPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint legendTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final TextPaint legendTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final Paint legendSwatchPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF drawingRect = new RectF();
     private List<Slice> slices = Collections.emptyList();
@@ -198,7 +198,7 @@ public class PieChartView extends View {
             float textBaseLine = swatchTop - fontMetrics.ascent;
 
             float maxLabelWidth = viewWidth - (textX - getPaddingLeft()) - legendSpacing - legendTextPaint.measureText(percent) - getPaddingRight();
-            String label = TextUtils.ellipsize(s.label, (TextPaint) legendTextPaint, maxLabelWidth, TextUtils.TruncateAt.END).toString();
+            String label = TextUtils.ellipsize(s.label, legendTextPaint, maxLabelWidth, TextUtils.TruncateAt.END).toString();
             canvas.drawText(label, textX, textBaseLine, legendTextPaint);
 
             float pctX = getPaddingLeft() + viewWidth - legendTextPaint.measureText(percent);
