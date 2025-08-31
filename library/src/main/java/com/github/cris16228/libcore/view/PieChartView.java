@@ -178,7 +178,7 @@ public class PieChartView extends View {
             }
 
             if (showLabels) {
-                String txt = String.format(Locale.getDefault(), "%d%%", Math.round((slice.value / totalValue) * 100));
+                String txt = String.format(Locale.getDefault(), "%d%%", Math.round((slice.value / value) * 100));
                 drawLabel(canvas, txt, startAngle, sweepAngle);
             }
             startAngle += sweepAngle;
@@ -232,10 +232,17 @@ public class PieChartView extends View {
     }
 
     private void drawLabel(Canvas canvas, String txt, float startAngle, float sweepAngle) {
+        float radius = drawingRect.width() / 2f * (1 - holeRadiusPercent) * 0.75f;
+        double sweepRad = Math.toRadians(sweepAngle);
+        float arcLength = (float) (radius * sweepRad);
 
+        float textWidth = labelPaint.measureText(txt);
+        float marginPx = dpToPx(4);
+        if (sweepAngle <= 0f || txt.startsWith("0") || arcLength < textWidth + marginPx) {
+            return;
+        }
         float angle = startAngle + sweepAngle / 2f;
         double rad = Math.toRadians(angle);
-        float radius = drawingRect.width() / 2f * (1 - holeRadiusPercent) * 0.75f;
         float cx = (float) (drawingRect.centerX() + radius * Math.cos(rad));
         float cy = (float) (drawingRect.centerY() + radius * Math.sin(rad));
 
