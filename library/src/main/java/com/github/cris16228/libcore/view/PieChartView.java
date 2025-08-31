@@ -162,7 +162,7 @@ public class PieChartView extends View {
         float startAngle = -90f;
         for (Slice slice : slices) {
             if (slice.value <= 0) continue;
-            float sweepAngle = (slice.value / totalValue) * 360 * animationProgress;
+            float sweepAngle = (slice.value / totalValue == 0 ? value : totalValue) * 360 * animationProgress;
             if (sweepAngle <= 0) continue;
 
             slicePaint.setColor(slice.color);
@@ -175,16 +175,15 @@ public class PieChartView extends View {
                 drawingRect.inset(-inset, -inset);
             }
 
-            if (legendEnabled && !slices.isEmpty()) {
-                float legendStartY = pieBottom + dpToPx(12);
-                drawLegend(canvas, legendStartY);
-            }
-
             if (showLabels) {
                 String txt = String.format(Locale.getDefault(), "%d%%", Math.round((slice.value / totalValue) * 100));
                 drawLabel(canvas, txt, startAngle, sweepAngle);
             }
             startAngle += sweepAngle;
+        }
+        if (legendEnabled && !slices.isEmpty()) {
+            float legendStartY = pieBottom + dpToPx(12);
+            drawLegend(canvas, legendStartY);
         }
     }
 
@@ -192,6 +191,8 @@ public class PieChartView extends View {
         long total = totalValue <= 0 ? total() : totalValue;
         if (total == 0) total = 1;
 
+        Paint.FontMetrics fontMetrics = legendTextPaint.getFontMetrics();
+        float rowHeight = Math.abs(fontMetrics.ascent) + fontMetrics.descent + legendRowSpacing;
 
         int viewWidth = getWidth() - getPaddingLeft() - getPaddingRight();
 
@@ -202,19 +203,22 @@ public class PieChartView extends View {
             float pct = (float) s.value / total * 100f;
             String percent = String.format(Locale.getDefault(), "%.1f%%", pct);
 
+            float rowTop = legendStartY + rowsDrawn * rowHeight;
+            float rowBottom = rowTop + rowHeight;
+
             float swatchLeft = getPaddingLeft();
-            float swatchTop = legendStartY + rowsDrawn * (legendSwatchSize + legendSpacing);
+            float swatchTop = rowTop + (rowHeight - legendSwatchSize) / 2f;
             float swatchRight = swatchLeft + legendSwatchSize;
             float swatchBottom = swatchTop + legendSwatchSize;
 
             legendSwatchPaint.setColor(s.color);
             canvas.drawRect(swatchLeft, swatchTop, swatchRight, swatchBottom, legendSwatchPaint);
 
+            float textBaseLine = rowTop - fontMetrics.ascent;
             float textX = swatchRight + legendSpacing;
-            Paint.FontMetrics fontMetrics = legendTextPaint.getFontMetrics();
-            float textBaseLine = swatchTop - fontMetrics.ascent;
-
             float maxLabelWidth = viewWidth - (textX - getPaddingLeft()) - legendSpacing - legendTextPaint.measureText(percent) - getPaddingRight();
+
+
             String label = TextUtils.ellipsize(s.label, legendTextPaint, maxLabelWidth, TextUtils.TruncateAt.END).toString();
             canvas.drawText(label, textX, textBaseLine, legendTextPaint);
 
