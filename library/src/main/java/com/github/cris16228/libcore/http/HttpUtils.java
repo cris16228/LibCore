@@ -1,13 +1,17 @@
 package com.github.cris16228.libcore.http;
 
+import static com.github.cris16228.libcore.NetworkUtils.isNetworkAvailable;
 import static java.net.HttpURLConnection.HTTP_OK;
 
+import android.Manifest;
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
 
 import com.github.cris16228.libcore.StringUtils;
 import com.github.cris16228.libcore.deviceutils.DeviceUtils;
@@ -58,6 +62,7 @@ public class HttpUtils {
     private JSONObject jsonObject;
     private boolean debug;
     private long chunkSize;
+    private Context context;
     private List<String> cookies = new ArrayList<>();
 
     public static HttpUtils get() {
@@ -75,6 +80,12 @@ public class HttpUtils {
     public static HttpUtils get(long chunkSize) {
         HttpUtils httpUtils = new HttpUtils();
         httpUtils.chunkSize = chunkSize;
+        return httpUtils;
+    }
+
+    public static HttpUtils get(Context context) {
+        HttpUtils httpUtils = new HttpUtils();
+        httpUtils.context = context;
         return httpUtils;
     }
 
@@ -278,7 +289,11 @@ public class HttpUtils {
         }
     }
 
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     public void downloadFile(String _url, String path, @Nullable HashMap<String, String> params, String bearer, ProgressCallback progressCallback) {
+        if (!isNetworkAvailable(context)) {
+            progressCallback.onFinish(null);
+        }
         int count;
         if (TextUtils.isEmpty(_url))
             url = _url;
@@ -332,7 +347,7 @@ public class HttpUtils {
                 }
             }
         } catch (Exception e) {
-            Log.e("Error: ", e.toString());
+            e.printStackTrace();
         }
     }
 

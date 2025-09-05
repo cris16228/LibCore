@@ -1,10 +1,12 @@
 package com.github.cris16228.libcore;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkCapabilities;
+
+import androidx.annotation.RequiresPermission;
 
 public class NetworkUtils {
 
@@ -17,11 +19,11 @@ public class NetworkUtils {
         return networkUtils;
     }
 
-    public boolean isConnectedTo(Context context) {
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        Network nw = connectivityManager.getActiveNetwork();
-        if (nw == null) return false;
-        NetworkCapabilities actNw = connectivityManager.getNetworkCapabilities(nw);
-        return actNw != null && (actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR));
+        if (connectivityManager == null) return false;
+        NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+        return networkCapabilities != null && (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR));
     }
 }
