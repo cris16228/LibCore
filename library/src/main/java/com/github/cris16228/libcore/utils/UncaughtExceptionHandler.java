@@ -1,14 +1,17 @@
 package com.github.cris16228.libcore.utils;
 
+import static com.github.cris16228.libcore.NetworkUtils.isNetworkAvailable;
+
+import android.Manifest;
 import android.app.Activity;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresPermission;
 
 import com.github.cris16228.libcore.AsyncUtils;
 import com.github.cris16228.libcore.FileUtils;
-import com.github.cris16228.libcore.NetworkUtils;
 import com.github.cris16228.libcore.deviceutils.PackageUtils;
 import com.github.cris16228.libcore.http.HttpUtils;
 import com.github.cris16228.libcore.models.CrashModel;
@@ -82,12 +85,13 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
                     FileUtils.with(app).debugLog(report.toString(), fileName);
                 }
 
+                @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
                 @Override
                 public String doInBackground() {
                     if (reportCrash) {
                         String crashPath = FileUtils.with(app).getPersonalSpace(app) + "/crash-reports/";
                         if (FileUtils.with(app).getNewestFile(crashPath) != null) {
-                            if (NetworkUtils.with(app).isConnectedTo(app)) {
+                            if (isNetworkAvailable(app.getApplicationContext())) {
                                 File crashFile = FileUtils.with(app).getNewestFile(crashPath);
                                 HttpUtils httpUtils = HttpUtils.get();
                                 HashMap<String, String> headers = new HashMap<>();
