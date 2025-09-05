@@ -293,6 +293,8 @@ public class HttpUtils {
     public void downloadFile(String _url, String path, @Nullable HashMap<String, String> params, String bearer, ProgressCallback progressCallback) {
         if (!isNetworkAvailable(context)) {
             progressCallback.onFinish(null);
+            Log.e(getClass().getSimpleName(), "No network available");
+            return;
         }
         int count;
         if (TextUtils.isEmpty(_url))
